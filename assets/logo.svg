@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+  <title>Saldo</title>
+  <path fill="#244d40" d="M30 4H17C9.82 4 4 9.82 4 17v3h8v-3a5 5 0 0 1 5-5h13V4Z"/>
+  <path fill="#244d40" d="M6 32h13c7.18 0 13-5.82 13-13v-3h-8v3a5 5 0 0 1-5 5H6v8Z"/>
+</svg>
