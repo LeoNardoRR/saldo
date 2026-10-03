@@ -20,11 +20,12 @@ function showConnection(){connection.replaceChildren();const dot=document.create
 window.addEventListener('online',showConnection);window.addEventListener('offline',showConnection);showConnection();
 function offerUpdate(){if(registration?.waiting&&navigator.serviceWorker.controller)document.querySelector('#pwa-update').hidden=false}
 if('serviceWorker' in navigator&&window.isSecureContext){
-  window.addEventListener('load',async()=>{try{
+  async function registerOffline(){try{
     registration=await navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});
     offerUpdate();
     registration.addEventListener('updatefound',()=>{const worker=registration.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed')offerUpdate()})});
-  }catch{instructions.textContent='Não foi possível preparar o modo offline. Abra o app com conexão em um navegador compatível e tente novamente.';console.warn('O modo offline do Saldo não está disponível neste navegador.')}});
+  }catch{instructions.textContent='Não foi possível preparar o modo offline. Abra o app com conexão em um navegador compatível e tente novamente.';console.warn('O modo offline do Saldo não está disponível neste navegador.')}}
+  registerOffline();
   document.querySelector('#apply-update').addEventListener('click',()=>{if(!registration?.waiting)return;if(document.querySelector('dialog[open]')){window.alert('Conclua ou feche o formulário aberto antes de atualizar.');return}registration.waiting.postMessage({type:'SKIP_WAITING'})});
   let refreshing=false;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!refreshing&&document.querySelector('#pwa-update').hidden===false){refreshing=true;window.location.reload()}});
