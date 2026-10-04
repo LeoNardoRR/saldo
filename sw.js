@@ -3,7 +3,7 @@ const BUILD_ID='__BUILD_ID__';
 const CACHE_PREFIX='saldo-shell-';
 const CACHE_NAME=CACHE_PREFIX+BUILD_ID;
 const SHELL=[
-  './','./index.html','./style.css','./app.js','./finance.js','./pwa.js','./manifest.webmanifest',
+  './','./style.css','./app.js','./finance.js','./pwa.js','./manifest.webmanifest',
   './assets/logo.svg','./assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/icons/icon-maskable-512.png','./assets/icons/apple-touch-icon.png',
   ...Array.from({length:8},(_,i)=>`./assets/fonts/font-${i}.woff2`)
@@ -26,7 +26,8 @@ self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
   if(request.method!=='GET'||url.origin!==self.location.origin)return;
   /* Cache only this release's static shell. Login, API calls and other routes use the network. */
-  const allowed=urls.find(path=>new URL(path).pathname===url.pathname);
+  const indexPath=new URL('index.html',self.registration.scope).pathname;
+  const allowed=url.pathname===indexPath?urls[0]:urls.find(path=>new URL(path).pathname===url.pathname);
   if(!allowed)return;
   event.respondWith((async()=>{const cache=await caches.open(CACHE_NAME);return await cache.match(allowed)||fetch(request)})());
 });
