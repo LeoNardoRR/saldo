@@ -1,7 +1,7 @@
 import {cp,rm,mkdir,readFile,writeFile,readdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
-const files=['index.html','app.js','finance.js','pwa.js','sw.js','style.css','manifest.webmanifest'];
+const files=['index.html','app.js','finance.js','store.js','pwa.js','sw.js','style.css','manifest.webmanifest'];
 await rm('dist',{recursive:true,force:true});await mkdir('dist',{recursive:true});
 for(const file of files)await cp(file,path.join('dist',file));
 await cp('assets','dist/assets',{recursive:true});
