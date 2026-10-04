@@ -1,52 +1,54 @@
-# Saldo 2.0
+# Saldo 4.0
 
-App financeiro pessoal estático e PWA, em português. Fonte de publicação: `sites/saldo`; desenvolvimento local: raiz do projeto. `npm start` serve em `127.0.0.1:5173`. `npm run check`, `npm test`, `npm run build` validam e geram `dist/` com arquivos públicos do app. Nenhum registro pessoal é incluído no pacote.
+Controle financeiro pessoal em português, com PWA, contas individuais e sincronização. A fonte atual é este diretório `sites/saldo`; os arquivos antigos da raiz do workspace não são a versão atual.
 
-## Uso
+## Execução local
 
-- Cadastre/renomeie categorias de receitas e despesas. Grafia, caixa, espaços e acentos são normalizados na comparação; renomear atualiza registros e orçamentos associados. Exclusão de categoria em uso é bloqueada.
-- Contas têm saldo inicial e data de corte. O saldo disponível considera apenas movimentações realizadas até hoje, a partir dessa data. O saldo inicial é anterior às movimentações da data de corte. Nomes podem ser alterados preservando vínculos. Contas em uso não podem ser excluídas ou convertidas para outro tipo.
-- Movimentações incluem referência, vencimento, status e data efetiva. Resultado mensal realizado usa o mês de referência; saldo bancário usa a data efetiva. Previsto inclui todos os compromissos do mês. Não confundir resultado mensal com dinheiro disponível hoje.
-- Registro de transferência exige origem e destino diferentes. Entrada na conta de destino e saída na origem são conciliadas; não criam receita ou despesa no resultado.
-- Cartões têm fechamento e vencimento. Compras após o fechamento entram na fatura seguinte; compra no dia do fechamento entra na fatura atual. Se o vencimento é posterior ao fechamento, fica no mesmo mês da fatura; caso contrário, no mês seguinte. Fechamento aceita dia 1–31; vencimento aceita 1–28.
-- Parcelamento divide o valor **total** em até 60 parcelas, distribuindo centavos sem perder valor. O primeiro registro mantém o status escolhido e os próximos são previstos. Conta, categoria, fatura e datas podem ser ajustadas na edição individual.
-- Pagamento de fatura é transferência da conta bancária/carteira para o cartão. A fatura mostra total, pagos e programados. Novos pagamentos não podem ultrapassar o saldo da fatura após descontar pagamentos realizados e programados. Quando uma fatura está integralmente paga, parcelas previstas associadas são confirmadas; registros antigos sem confirmação continuam exigindo confirmação explícita. Pagar fatura não cria nova despesa.
-- Recorrência gera uma série mensal com quantidade explícita (2–60 meses), mantendo o dia original e ajustando meses menores. É possível excluir os próximos previstos da série e desfazer essa exclusão. Não há geração indefinida nem notificações em segundo plano.
-- Agenda mostra pendências, registros sem confirmação e faturas do mês de vencimento. Confirme individualmente ou selecione registros em lote com a mesma data efetiva/status.
-- Orçamento distingue limite de despesas de meta de receita. Ambos mostram realizado e previsão; salário é receita, não despesa. Metas de reserva continuam manuais e não geram lançamentos.
+Node >=22.13.0, Vinext/Vite, rotas compatíveis com Next e D1. A interface é HTML/CSS e JavaScript modular, servida por `app/route.ts`.
 
-## Preservação e migração
+```sh
+npm run install:ci
+npm run dev -- --port 5182 --hostname 127.0.0.1
+```
 
-O app usa um único documento `saldo.ledger.v3` no localStorage. Escritas ocorrem sob Web Locks exclusivas, relendo o documento atual; registros editados têm comparação da versão esperada e conflitos são bloqueados. Alterações em outras janelas são refletidas por eventos de armazenamento/visibilidade. Chrome, Edge ou Safari compatível com Web Locks é necessário para gravação segura.
+Abra `http://127.0.0.1:5182/`. O runtime local usa identidade de teste e banco local, sem gravar no site publicado. `localhost` e `127.0.0.1` têm armazenamento de navegador separado e compartilham o banco local.
 
-Na primeira abertura, transações `saldo.transactions.v1` e preferências `saldo.settings.v1` são validadas e copiadas para o novo modelo. IDs, valores, datas, perfil/foto, metas e orçamentos são preservados. Registros sem status recebem **Sem confirmação**, sem presumir pagamento. Contas e categorias equivalentes por caixa/acentos/espaços se tornam canônicas. Limites antigos para a mesma categoria e mês são somados, preservando o total e a cópia original. Orçamento de categoria exclusivamente de receita passa a meta de receita. As chaves antigas não são apagadas ou sobrescritas. O conteúdo original também é guardado em `saldo.migration.v3.backup` e pode ser baixado por **Backup anterior**. Uma janela antiga que altere as chaves antigas após a migração gera aviso; feche versões antigas e recupere seus dados pelo backup da janela antiga antes de substituir o estado novo.
+```sh
+npm run check
+npm test
+npm run lint
+npm run build
+```
 
-Backups JSON das versões 1, 2 e 3 são aceitos, após validação. Restauração substitui os dados após confirmação e bloqueia alterações ocorridas em outra janela durante a confirmação. Um snapshot anterior é guardado e pode ser baixado pelo botão **Backup anterior**. Em armazenamento corrompido, **Exportar recuperação** preserva os dados originais e restauração de backup válido permite recuperação protegida. CSV inclui datas de referência/vencimento/efetiva, status, contas e fatura; exporta todo o mês, independentemente dos filtros da tabela.
+`predev`/`prebuild` preparam assets e o fingerprint da PWA. Durante uma sessão já aberta, execute `node scripts/prepare-client.mjs` após editar módulos e aplique a atualização oferecida no app. `public/`, `dist/`, `.wrangler/` e dados pessoais não são versionados. Publicação é um fluxo separado; esta revisão foi feita somente localmente.
 
-Dados continuam locais ao navegador/origem, sem sincronização entre dispositivos e sem integração bancária. Limpar o armazenamento remove registros e backups locais; mantenha cópias externas dos backups. A publicação do Site não envia registros do usuário ao servidor. O acesso do Site permanece privado no Sites.
+## Experiência e regras
 
-## PWA
+- Visão geral: disponível hoje em bancos/carteiras; contas a pagar/receber do período e atrasos anteriores; caixa por data efetiva; comparação com o mesmo corte do mês anterior; despesas por referência e histórico de seis meses. Saldo inicial não conferido e registros sem confirmação recebem aviso.
+- Movimentações: pesquisa sem distinção de acentos, filtros combinados, todos os períodos, referência ou pagamento/vencimento, ordenação assinada, páginas de 25/50, seleção e confirmação em lote. Celular tem lista própria com valor e status. CSV corresponde aos resultados filtrados, com centavos, sinal das despesas e proteção contra fórmulas em texto.
+- Registro rápido: valor, descrição, categoria, conta, status e data; referência, repetição e observações ficam nos detalhes. Categoria exige escolha explícita. Alterar data não altera status nem sobrescreve referência editada. Rascunhos de lançamentos/contas ficam separados por usuário e aparelho; fechar formulário alterado exige confirmação.
+- Contas: disponível usa realizados pela data efetiva desde a data do saldo inicial. Saldo inicial futuro não entra antes de vigorar. Renomear preserva vínculos; contas em uso não podem ser excluídas ou convertidas para outro tipo.
+- Cartão: compra integra despesa/orçamento por referência. Pagamento de fatura é transferência, afeta caixa e não cria outra despesa. Fatura distingue compras, pago, programado e restante; pagamento próprio aceita valor parcial e confirmação de programado. Fechamento 1–31 e vencimento 1–28; compra após fechamento entra no ciclo seguinte.
+- Recorrências/parcelas: séries finitas de 2–60 ocorrências; repetir replica valor mensal, parcelar divide o total com centavos exatos. Permite conferir série, editar próximos previstos e excluí-los com desfazer. Não há cobrança bancária nem geração indefinida automática.
+- Planejamento: limite de despesa ou meta de receita, realizado/previsão, cópia do mês anterior sem substituir categorias já planejadas. Metas com prazo opcional são manuais: não reservam dinheiro nem alteram saldo; excedente fica visível.
+- Configurações: perfil/foto, privacidade, sync, instalação, categorias, backups e recuperação. JPG/PNG/WebP até 8 MB é recortado/reduzido localmente; erro de foto preserva a anterior.
 
-Manifesto, ícones e fontes locais; service worker com cache por versão. Atualização explícita pelo botão Atualizar; não recarrega enquanto há formulário aberto. Offline funciona após primeira abertura conectada. Cache limitado ao shell estático; autenticação e APIs seguem na rede. Atualização preserva o armazenamento financeiro. Instalação depende do navegador e confirmação do usuário.
+Formulários não aceitam pagamento/recebimento realizado no futuro. Importações preservam datas e status antigos; revisão exige decisão explícita, sem inventar pagamentos.
 
-## Validação
+## Dados e sincronização
 
-Testes automatizados cobrem formatos monetários/datas, projeção versus realizado, migração/validação de backup, orçamento por categoria normalizada, saldo inicial, transferências, parcelas e fechamento/vencimento de faturas, pagamentos programados, confirmação de fatura, concorrência entre janelas, conflitos, falha de gravação, recuperação e PWA.
+O formato permanece **v3**, compatível com backups existentes; 4.0 é a versão de produto/interface. `selectWorkspace` confirma sessão antes de mostrar dados online e separa armazenamento, backups, preferências e contexto por usuário. Offline usa a última identidade confirmada no dispositivo.
 
-QA de interface com dados fictícios em origem local separada: criação de categoria/cartão, recorrência de três meses, compra em três parcelas com centavos, meta de receita, confirmação de pagamento, programação de pagamento de fatura sem duplicidade, restauração de backup antigo e preservação de lançamento ao salvar perfil em outra janela. O evento de download de JSON não foi exposto pelo navegador integrado nessa verificação; geração por Blob/âncora não implica confirmação de gravação em disco.
+D1 do próprio Site isola documentos pela identidade autenticada do ChatGPT. Cliente mantém cópia local, salva offline e sincroniza ao reconectar, voltar à janela e a cada 15 segundos enquanto aberto. Web Locks/revisões condicionais protegem escritas. Alterações independentes são combinadas; conflito exige escolha e mostra campos diferentes. Troca de conta não envia dados ao novo usuário.
 
+Migração v1/v2 preserva conteúdo; ausência de status vira **Sem confirmação**. Chaves antigas não são apagadas. Backups 1/2/3 são validados antes de restaurar. Restauração substitui o espaço da conta e sincroniza para todos os dispositivos, com prévia e cópia anterior automática. Conteúdo corrompido pode ser exportado para recuperação.
 
-## Sincronização entre dispositivos (v3.0)
+API limitada a 1 MB/documento. Sem integração bancária, reserva automática ou push. Use dispositivo/perfil de navegador próprio para dados pessoais.
 
-Os registros, contas, categorias, metas, orçamento e perfil são guardados no banco D1 do mesmo Site, isolados pelo identificador autenticado da conta do ChatGPT. O navegador mantém uma cópia local para uso offline. Entre na mesma conta no app instalado e no navegador do PC; a primeira sincronização envia os registros existentes sem remover o armazenamento anterior. A interface mostra se os dados estão sincronizados, pendentes, offline ou precisam de login. Alterações são enviadas após salvar; outros dispositivos abertos verificam a conta a cada 15 segundos e ao voltar à janela. Um dispositivo fechado sincroniza ao ser aberto.
+## PWA e arquitetura
 
-O banco usa revisão e gravação condicional, e o cliente combina alterações independentes. Edição contra edição ou exclusão exige escolha explícita. Incompatibilidades entre contas e categorias bloqueiam a combinação e oferecem revisão das duas cópias. Há um backup local antes da primeira sincronização e antes de resolver conflitos. A recuperação ou restauração de backup também será sincronizada. Trocar de conta não envia a cópia vinculada ao usuário anterior.
+Shell, fontes e ícones locais usam cache por fingerprint de HTML/módulos/CSS/assets. Autenticação/API seguem na rede. Atualização explícita, bloqueada com formulário aberto, conserva mês na chave do usuário.
 
-A API exige identidade do Sites e origem do próprio aplicativo; dados e respostas da API não entram no cache offline. O limite de envio é 1 MB por conjunto de dados. A cópia local continua disponível se o envio falhar.
+`app.js`: coordenação/navegação; `views.js`: páginas; `flows.js`: formulários/operações; `ui.js`: controles/modal/erros/toast; `product.js`: cálculos de apresentação testáveis. Regras e contratos ficam em `finance.js`, `store.js`, `sync.js`, `sync-merge.js`. Padrões ativos: [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md). Componentes React do starter Sites permanecem como infraestrutura inativa da interface financeira, sem segundo conjunto usado pelas telas.
 
-Validação: testes automatizados para concorrência no banco, separação de contas, revisões, idempotência, perda de rede, envio durante nova edição, exclusões e conflitos. Teste de navegador em origens distintas (localhost e 127.0.0.1), compartilhando o banco local: envio nos dois sentidos, login, registro offline, recarga offline e sincronização ao reconectar. Dados de QA não são enviados ao Site de produção.
-
-
-## Contas individuais (v3.1)
-
-Visitantes convidados entram com sua própria conta do ChatGPT. O banco, a cópia offline, os backups e o mês selecionado ficam separados por usuário. A sessão é confirmada antes de mostrar registros em uma abertura online. Trocas de conta ocultam a cópia anterior e reabrem o espaço correto; cada envio também confirma a conta esperada no servidor para impedir mistura se o login mudar durante a requisição. Dados locais já vinculados são migrados somente para seu titular, preservando a cópia antiga. Registros de versões sem vínculo exigem associação explícita. Acesso offline usa a última conta confirmada no dispositivo; use dispositivos e perfis de navegador próprios para dados pessoais.
+Testes cobrem cálculos, migração, recuperação, parcelas, faturas, concorrência, identidade, conflitos, rede, CSV e PWA. QA visual usa dados fictícios, 1.000 registros, nomes longos, valores altos e diferentes larguras. Evidências estão no relatório de implementação fora do pacote. Emulação não equivale à homologação em aparelhos físicos/leitores de tela reais.
