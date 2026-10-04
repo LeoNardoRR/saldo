@@ -45,3 +45,8 @@ O banco usa revisão e gravação condicional, e o cliente combina alterações 
 A API exige identidade do Sites e origem do próprio aplicativo; dados e respostas da API não entram no cache offline. O limite de envio é 1 MB por conjunto de dados. A cópia local continua disponível se o envio falhar.
 
 Validação: testes automatizados para concorrência no banco, separação de contas, revisões, idempotência, perda de rede, envio durante nova edição, exclusões e conflitos. Teste de navegador em origens distintas (localhost e 127.0.0.1), compartilhando o banco local: envio nos dois sentidos, login, registro offline, recarga offline e sincronização ao reconectar. Dados de QA não são enviados ao Site de produção.
+
+
+## Contas individuais (v3.1)
+
+Visitantes convidados entram com sua própria conta do ChatGPT. O banco, a cópia offline, os backups e o mês selecionado ficam separados por usuário. A sessão é confirmada antes de mostrar registros em uma abertura online. Trocas de conta ocultam a cópia anterior e reabrem o espaço correto; cada envio também confirma a conta esperada no servidor para impedir mistura se o login mudar durante a requisição. Dados locais já vinculados são migrados somente para seu titular, preservando a cópia antiga. Registros de versões sem vínculo exigem associação explícita. Acesso offline usa a última conta confirmada no dispositivo; use dispositivos e perfis de navegador próprios para dados pessoais.

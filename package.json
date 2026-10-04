@@ -1,6 +1,6 @@
 {
   "name": "saldo-pessoal",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -14,8 +14,8 @@
     "db:generate": "drizzle-kit generate",
     "predev": "node scripts/prepare-client.mjs",
     "prebuild": "node scripts/prepare-client.mjs",
-    "check": "node --check app.js && node --check finance.js && node --check store.js && node --check sync.js && node --check sync-merge.js && node --check server-ledger.js && node --check pwa.js && node --check sw.js",
-    "test": "node --test finance.test.js store.test.js pwa.test.js sync.test.js"
+    "check": "node --check app.js && node --check finance.js && node --check store.js && node --check sync.js && node --check sync-merge.js && node --check server-ledger.js && node --check pwa.js && node --check sw.js && node --check identity.js",
+    "test": "node --test finance.test.js store.test.js pwa.test.js sync.test.js identity.test.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

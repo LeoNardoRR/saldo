@@ -14,6 +14,7 @@ export async function handleLedger(request,{userId,db}){
     if(Number(request.headers.get('Content-Length')||0)>1048576)return json({error:'Os dados excedem o limite de sincronização de 1 MB. Exporte um backup.'},413);
     const raw=await request.text();if(new TextEncoder().encode(raw).length>1048576)return json({error:'Os dados excedem o limite de sincronização de 1 MB. Exporte um backup.'},413);
     let body;try{body=JSON.parse(raw)}catch{return json({error:'Dados inválidos.'},400)}
+    if(body?.userId!==userId)return json({error:'A conta mudou. Entre novamente antes de sincronizar.',code:'account_changed'},403);
     if(!Number.isSafeInteger(body?.revision)||body.revision<0||!validState(body?.state))return json({error:'Dados inválidos. Nada foi alterado.'},400);
     const state=dataState(body.state),current=await read();
     if(current.state&&sameData(state,current.state))return json(current);

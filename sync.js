@@ -25,7 +25,7 @@ export function createSync({store,fetcher=fetch,locks=navigator.locks,onStatus=(
           await store.sync(current=>({...current,_sync:{...current._sync,lastSync:clock()}}));
           status('synced','Sincronizado com sua conta');return;
         }
-        const sent=dataState(merged),{data:ack,conflict}=await request({revision:cloud.revision,state:sent});
+        const sent=dataState(merged),{data:ack,conflict}=await request({userId:cloud.userId,revision:cloud.revision,state:sent});
         if(conflict)continue;
         if(ack.userId!==cloud.userId)throw Error('A conta mudou durante a sincronização. Nenhum dado local foi substituído.');
         const after=await store.sync(current=>{
