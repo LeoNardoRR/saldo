@@ -3,7 +3,7 @@ const BUILD_ID='__BUILD_ID__';
 const CACHE_PREFIX='saldo-shell-';
 const CACHE_NAME=CACHE_PREFIX+BUILD_ID;
 const SHELL=[
-  './','./style.css','./app.js','./finance.js','./store.js','./pwa.js','./manifest.webmanifest',
+  './','./style.css','./app.js','./finance.js','./store.js','./sync.js','./sync-merge.js','./pwa.js','./manifest.webmanifest',
   './assets/logo.svg','./assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/icons/icon-maskable-512.png','./assets/icons/apple-touch-icon.png',
   ...Array.from({length:8},(_,i)=>`./assets/fonts/font-${i}.woff2`)

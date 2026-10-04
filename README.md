@@ -34,3 +34,14 @@ Manifesto, ícones e fontes locais; service worker com cache por versão. Atuali
 Testes automatizados cobrem formatos monetários/datas, projeção versus realizado, migração/validação de backup, orçamento por categoria normalizada, saldo inicial, transferências, parcelas e fechamento/vencimento de faturas, pagamentos programados, confirmação de fatura, concorrência entre janelas, conflitos, falha de gravação, recuperação e PWA.
 
 QA de interface com dados fictícios em origem local separada: criação de categoria/cartão, recorrência de três meses, compra em três parcelas com centavos, meta de receita, confirmação de pagamento, programação de pagamento de fatura sem duplicidade, restauração de backup antigo e preservação de lançamento ao salvar perfil em outra janela. O evento de download de JSON não foi exposto pelo navegador integrado nessa verificação; geração por Blob/âncora não implica confirmação de gravação em disco.
+
+
+## Sincronização entre dispositivos (v3.0)
+
+Os registros, contas, categorias, metas, orçamento e perfil são guardados no banco D1 do mesmo Site, isolados pelo identificador autenticado da conta do ChatGPT. O navegador mantém uma cópia local para uso offline. Entre na mesma conta no app instalado e no navegador do PC; a primeira sincronização envia os registros existentes sem remover o armazenamento anterior. A interface mostra se os dados estão sincronizados, pendentes, offline ou precisam de login. Alterações são enviadas após salvar; outros dispositivos abertos verificam a conta a cada 15 segundos e ao voltar à janela. Um dispositivo fechado sincroniza ao ser aberto.
+
+O banco usa revisão e gravação condicional, e o cliente combina alterações independentes. Edição contra edição ou exclusão exige escolha explícita. Incompatibilidades entre contas e categorias bloqueiam a combinação e oferecem revisão das duas cópias. Há um backup local antes da primeira sincronização e antes de resolver conflitos. A recuperação ou restauração de backup também será sincronizada. Trocar de conta não envia a cópia vinculada ao usuário anterior.
+
+A API exige identidade do Sites e origem do próprio aplicativo; dados e respostas da API não entram no cache offline. O limite de envio é 1 MB por conjunto de dados. A cópia local continua disponível se o envio falhar.
+
+Validação: testes automatizados para concorrência no banco, separação de contas, revisões, idempotência, perda de rede, envio durante nova edição, exclusões e conflitos. Teste de navegador em origens distintas (localhost e 127.0.0.1), compartilhando o banco local: envio nos dois sentidos, login, registro offline, recarga offline e sincronização ao reconectar. Dados de QA não são enviados ao Site de produção.
