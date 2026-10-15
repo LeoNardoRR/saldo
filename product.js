@@ -81,10 +81,10 @@ export function categoryTotals(state, month, mode='all') {
   const values=new Map();
   for(const e of state.entries) {
     if(e.type!=='expense'||!inMonth(e.date,month)||mode==='settled'&&e.status!=='settled') continue;
-    const v=values.get(e.category)||{name:e.category,realized:0,planned:0,legacy:0,total:0};
+    const key=normalized(e.category),v=values.get(key)||{name:e.category,realized:0,planned:0,legacy:0,total:0};
     v.total+=e.cents;
     v[e.status==='settled'?'realized':e.status==='legacy'?'legacy':'planned']+=e.cents;
-    values.set(e.category,v);
+    values.set(key,v);
   }
   return [...values.values()].sort((a,b)=>b.total-a.total);
 }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="application-name" content="Saldo">
-  <meta name="theme-color" content="#244d40">
+  <meta name="theme-color" content="#f4f2ed">
   <meta name="description" content="Seu dinheiro, com clareza. Organize contas, despesas, faturas e planos em um espaço pessoal sincronizado.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Saldo">
@@ -13,18 +13,22 @@
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="fonts.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="theme.css">
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("saldo.theme.v1")==="dark"?"dark":"light"}catch{document.documentElement.dataset.theme="light"}</script>
   <title>Saldo — seu dinheiro, com clareza</title>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Navegação principal">
-      <a class="brand" href="#overview" aria-label="Saldo, visão geral"><img src="assets/logo.svg" alt="" width="36" height="36"><span>saldo</span></a>
-      <div class="workspace-label"><span class="status-dot"></span> Meu financeiro</div>
-      <nav id="main-nav">
+      <a class="brand" href="#overview" aria-label="Saldo, visão geral"><img src="assets/logo.svg" alt="" width="34" height="34"><span>saldo</span></a>
+      <button class="button primary new-entry" id="add" type="button" aria-keyshortcuts="N"><span data-icon="plus"></span><span>Nova movimentação</span><kbd aria-hidden="true">N</kbd></button>
+      <nav id="main-nav" aria-label="Seções">
+        <p class="nav-group">Visão</p>
         <a href="#overview" data-page="overview"><span data-icon="grid"></span>Visão geral</a>
         <a href="#transactions" data-page="transactions"><span data-icon="list"></span>Movimentações</a>
         <a href="#accounts" data-page="accounts"><span data-icon="wallet"></span>Contas e cartões</a>
+        <p class="nav-group">Planejamento</p>
         <a href="#planning" data-page="planning"><span data-icon="target"></span>Orçamento e metas</a>
         <a href="#recurring" data-page="recurring"><span data-icon="repeat"></span>Recorrências</a>
       </nav>
@@ -39,29 +43,29 @@
         <div class="header-actions">
           <button class="icon-button" id="privacy-toggle" aria-label="Ocultar valores" title="Ocultar valores"><span data-icon="eye"></span></button>
           <button class="avatar" id="header-profile" aria-label="Editar perfil e foto">EU</button>
-          <button class="button primary" id="add" aria-label="Nova movimentação"><span data-icon="plus"></span><span>Nova movimentação</span></button>
         </div>
       </header>
       <div class="context-bar">
         <div class="period-control" id="period-control"><button class="icon-button" id="prev-month" aria-label="Mês anterior"><span data-icon="chevron-left"></span></button><label class="month-label"><span class="sr-only">Mês de referência</span><input type="month" id="month" aria-label="Mês de referência"></label><button class="icon-button" id="next-month" aria-label="Próximo mês"><span data-icon="chevron-right"></span></button></div>
         <div class="sync-control" id="sync-control" data-kind="busy"><span class="status-dot" aria-hidden="true"></span><span id="sync-status" role="status" aria-live="polite">Abrindo seu espaço…</span><button id="sync-action" class="text-button" hidden>Sincronizar agora</button></div>
       </div>
-      <main id="main-content" tabindex="-1" aria-busy="true"><div class="page-skeleton" aria-label="Carregando seu financeiro"><div></div><div></div><div></div></div></main>
+      <main id="main-content" tabindex="-1" aria-busy="true"><div class="page-skeleton" aria-label="Carregando seu financeiro"><div class="sk-hero"></div><div class="sk-kpis"><div></div><div></div><div></div><div></div></div><div class="sk-wide"></div><div class="sk-wide"></div></div></main>
       <footer class="app-footer"><span>saldo<span class="footer-divider">/</span>Seu dinheiro, com clareza.</span><span id="connection-status">Pessoal e privado</span></footer>
     </div>
   </div>
   <nav class="mobile-nav" aria-label="Navegação no celular">
     <a href="#overview" data-page="overview"><span data-icon="grid"></span><span>Início</span></a>
     <a href="#transactions" data-page="transactions"><span data-icon="list"></span><span>Registros</span></a>
+    <button type="button" class="fab" data-action="quick" aria-label="Novo registro"><span data-icon="plus"></span></button>
     <a href="#accounts" data-page="accounts"><span data-icon="wallet"></span><span>Contas</span></a>
-    <a href="#planning" data-page="planning"><span data-icon="target"></span><span>Planos</span></a>
-    <button data-action="more"><span data-icon="more"></span><span>Mais</span></button>
+    <button type="button" data-action="more"><span data-icon="more"></span><span>Mais</span></button>
   </nav>
   <dialog id="install-dialog" aria-labelledby="install-title"><div class="modal-head"><div><p class="eyebrow">PERTO DE VOCÊ</p><h2 id="install-title">Instale o Saldo</h2></div><button class="icon-button" data-close aria-label="Fechar"><span data-icon="close"></span></button></div><div class="modal-body"><img src="assets/icons/icon-192.png" alt="Ícone do Saldo" class="install-icon" width="64" height="64"><p id="install-instructions"></p><p class="helper">Abra com internet e entre na mesma conta do ChatGPT no celular e no computador. Seus dados serão sincronizados. Sem conexão, as alterações ficam salvas no aparelho e são enviadas quando você reconectar.</p></div><div class="modal-footer"><button class="button primary" data-close>Entendi</button></div></dialog>
   <button id="install-app" hidden class="sr-only" aria-hidden="true" tabindex="-1">Instalar Saldo</button>
   <div id="pwa-update" class="update-banner" role="status" hidden><span>Uma nova versão do Saldo está pronta.</span><button id="apply-update" class="button primary">Atualizar</button></div>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   <script type="module" src="app.js"></script>
+  <script type="module" src="fx.js"></script>
   <script type="module" src="pwa.js"></script>
 </body>
 </html>

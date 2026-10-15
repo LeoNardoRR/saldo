@@ -28,7 +28,7 @@ function updateHeader(){
   const [title,subtitle]=pageMeta[ctx.page];$('#page-title').textContent=title;$('#page-subtitle').textContent=subtitle;document.title=`${title} · Saldo`;
   $('#month').value=ctx.month;$('#period-control').hidden=ctx.page==='settings'||ctx.page==='recurring';
   document.querySelectorAll('[data-page]').forEach(a=>{if(a.dataset.page===ctx.page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
-  const more=$('.mobile-nav [data-action=more]');if(['settings','recurring'].includes(ctx.page))more.setAttribute('aria-current','page');else more.removeAttribute('aria-current');
+  const more=$('.mobile-nav [data-action=more]');if(['settings','recurring','planning'].includes(ctx.page))more.setAttribute('aria-current','page');else more.removeAttribute('aria-current');
   document.body.classList.toggle('values-hidden',Boolean(ctx.preferences.hidden));
   const privacy=$('#privacy-toggle');privacy.setAttribute('aria-label',ctx.preferences.hidden?'Mostrar valores':'Ocultar valores');privacy.title=privacy.getAttribute('aria-label');privacy.innerHTML=icon(ctx.preferences.hidden?'eye-off':'eye');
   if(ctx.state){const p=ctx.state.settings.profile;avatar($('#sidebar-avatar'),p.photo,p.name);avatar($('#header-profile'),p.photo,p.name);$('#profile-name').textContent=p.name||'Meu espaço';}
@@ -49,6 +49,7 @@ ctx.render=()=>{
   updateHeader();if(!ctx.state&&!ctx.storageError)return;
   if(ctx.storageError){main.innerHTML=`<div class="alert danger">${icon('alert')}<div><strong>Vamos preservar seus dados</strong><p>A cópia local precisa de recuperação. Exporte o conteúdo original antes de restaurar um backup válido.</p></div></div><div class="data-actions">${action('recovery-backup','Exportar recuperação',{cls:'button primary'})}${action('restore','Restaurar backup',{cls:'button secondary'})}</div>`;return;}
   const saved=captureFocus();main.innerHTML=pages[ctx.page](ctx);main.setAttribute('aria-busy','false');restoreFocus(saved);
+  if(ctx.flash){const ids=ctx.flash;ctx.flash=null;for(const id of ids)main.querySelectorAll(`[data-entry-id="${CSS.escape(id)}"],[data-select="${CSS.escape(id)}"]`).forEach(el=>(el.closest('tr,article')||el).classList.add('row-flash'));}
   if(ctx.store?.legacyChanged())main.insertAdjacentHTML('afterbegin',`<div class="alert warning"><div><strong>Uma versão antiga alterou dados neste aparelho</strong><p>Salve um backup na janela antiga antes de restaurar aqui. Feche versões antigas para evitar divergências.</p></div></div>`);
 };
 ctx.navigate=page=>{if(!pages[page])return;if(ctx.page!==page){ctx.page=page;ctx.selected.clear();ctx.render();window.scrollTo({top:0,behavior:'instant'});}if(location.hash!==`#${page}`)location.hash=page;};
@@ -59,7 +60,7 @@ ctx.store=createStore({storage:workspace.storage,onChange:state=>{
 }});
 ctx.change=async(change,options)=>{
   if(ctx.storageError)throw Error('Recupere os dados antes de salvar.');
-  const state=await ctx.store.change(change,options);ctx.sync?.schedule();return state;
+  let state;try{state=await ctx.store.change(change,options);}catch(error){ctx.flash=null;throw error;}ctx.sync?.schedule();return state;
 };
 
 function showSync(status){
@@ -81,7 +82,7 @@ function refreshFilters(){ctx.filter.page=1;ctx.selected.clear();ctx.render();}
 function invoke(name,button){
   const id=button?.dataset.id,e=ctx.state?.entries.find(e=>e.id===id),a=ctx.state?.accounts.find(a=>a.id===id),g=ctx.state?.settings.goals.find(g=>g.id===id);
   switch(name){
-    case 'new-entry':return flows.entryForm(ctx);
+    case 'new-entry':return flows.entryForm(ctx,null,{type:button?.dataset.type||'expense'});
     case 'edit-entry':return e&&flows.entryForm(ctx,e);
     case 'duplicate-entry':return e&&flows.entryForm(ctx,e,{duplicate:true});
     case 'delete-entry':return e&&flows.deleteEntry(ctx,e);
@@ -127,7 +128,8 @@ function invoke(name,button){
     case 'dismiss-setup':ctx.setPreference('setupDismissed',true);return ctx.render();
     case 'change-month':return ctx.setMonth(id);
     case 'more-categories':ctx.categoryExpanded=!ctx.categoryExpanded;return ctx.render();
-    case 'more':return modal({title:'Mais do seu Saldo',body:`<div class="manager-list"><a class="button secondary" href="#recurring">Recorrências e parcelas</a><a class="button secondary" href="#settings">Configurações e backups</a>${action('profile','Editar perfil e foto',{cls:'button secondary'})}</div>`,onAction:(name,b,owner)=>{owner.close(true);if(name==='profile')flows.profileForm(ctx);}});
+    case 'quick':return modal({title:'Novo registro',body:`<div class="sheet-actions">${[['expense','Nova despesa','arrow-up','Saiu dinheiro ou compra no cartão'],['income','Nova receita','arrow-down','Salário, venda ou outro recebimento'],['transfer','Transferência','transfer','Entre suas contas ou pagamento de fatura']].map(([type,label,ic,help])=>`<button type="button" class="sheet-action" data-action="sheet-entry" data-id="${type}">${icon(ic)}<span><strong>${label}</strong><small>${help}</small></span></button>`).join('')}<button type="button" class="sheet-action" data-action="sheet-agenda">${icon('clock')}<span><strong>Vencimentos</strong><small>Confirmar o que já foi pago ou recebido</small></span></button></div>`,onAction:(name,b,owner)=>{owner.close(true);if(name==='sheet-entry')flows.entryForm(ctx,null,{type:b.dataset.id});if(name==='sheet-agenda')flows.agenda(ctx);}});
+    case 'more':return modal({title:'Mais do seu Saldo',body:`<div class="manager-list"><a class="button secondary" href="#planning">Orçamento e metas</a><a class="button secondary" href="#recurring">Recorrências e parcelas</a><a class="button secondary" href="#settings">Configurações e backups</a>${action('profile','Editar perfil e foto',{cls:'button secondary'})}</div>`,onAction:(name,b,owner)=>{owner.close(true);if(name==='profile')flows.profileForm(ctx);}});
   }
 }
 
@@ -151,6 +153,7 @@ document.addEventListener('change',event=>{
 });
 document.addEventListener('input',event=>{if(event.target.id==='search'){ctx.filter.query=event.target.value;refreshFilters();}});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('details.row-menu[open]').forEach(x=>x.open=false);});
+document.addEventListener('keydown',event=>{if(event.key.toLowerCase()!=='n'||event.metaKey||event.ctrlKey||event.altKey||event.defaultPrevented)return;if(event.target.closest?.('input,textarea,select,[contenteditable]')||document.querySelector('dialog[open]')||!ctx.state)return;event.preventDefault();flows.entryForm(ctx);});
 document.addEventListener('click',event=>{document.querySelectorAll('details.row-menu[open]').forEach(x=>{if(!x.contains(event.target))x.open=false;});});
 window.addEventListener('hashchange',()=>{const page=aliases[location.hash.slice(1)]||'overview';ctx.navigate(page);document.querySelectorAll('dialog:not(#install-dialog)').forEach(d=>{if(d.querySelector('a[href^="#"]'))d.close();});});
 $('#month').onchange=event=>ctx.setMonth(event.target.value);

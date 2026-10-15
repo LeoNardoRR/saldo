@@ -1,4 +1,9 @@
+import {parseMoney} from './finance.js';
 export const $ = (selector,root=document) => root.querySelector(selector);
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const brlNumber = cents => (cents/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+// Normalises a money field on blur (1234,5 -> 1.234,50) without touching invalid text.
+export function formatMoneyField(el){const raw=el.value.trim();if(!raw)return;const negative=raw.startsWith('-'),cents=parseMoney(negative?raw.slice(1).trim():raw,true);if(cents!==null)el.value=(negative?'-':'')+brlNumber(cents);}
 export const esc = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const paths={
   grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
@@ -32,11 +37,19 @@ export const empty = (title,body,button='',symbol='list') => `<div class="empty-
 export const options = (items,value,placeholder='') => `${placeholder?`<option value="">${esc(placeholder)}</option>`:''}${items.map(item=>{const [key,label]=Array.isArray(item)?item:[item,item];return `<option value="${esc(key)}" ${key===value?'selected':''}>${esc(label)}</option>`;}).join('')}`;
 export const field = (label,input,{help='',wide=false}={}) => `<label class="field${wide?' full':''}"><span>${esc(label)}</span>${input}${help?`<small>${esc(help)}</small>`:''}</label>`;
 export const input = (name,value='',attrs='') => `<input name="${esc(name)}" value="${esc(value)}" ${attrs}>`;
-let toastTimer;
-export function toast(message,undo) {
-  const el=$('#toast');el.replaceChildren();const text=document.createElement('span');text.textContent=message;el.append(text);
-  if(undo){const b=document.createElement('button');b.className='text-button';b.textContent='Desfazer';b.onclick=async()=>{b.disabled=true;try{await undo();el.hidden=true;}catch(e){text.textContent=e.message;b.disabled=false;}};el.append(b);}
-  el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.hidden=true,undo?20000:6000);
+let toastTimer,toastLeave;
+function hideToast(el){
+  if(el.hidden)return;clearTimeout(toastTimer);
+  if(reducedMotion()){el.hidden=true;return;}
+  el.classList.add('leaving');clearTimeout(toastLeave);toastLeave=setTimeout(()=>{el.hidden=true;el.classList.remove('leaving');},180);
+}
+export function toast(message,undo,kind='success') {
+  const el=$('#toast');clearTimeout(toastTimer);clearTimeout(toastLeave);el.classList.remove('leaving');el.replaceChildren();
+  el.dataset.kind=kind;el.setAttribute('role',kind==='error'?'alert':'status');
+  const mark=document.createElement('span');mark.className='toast-icon';mark.setAttribute('aria-hidden','true');mark.innerHTML=icon(kind==='success'?'check':'alert');el.append(mark);
+  const text=document.createElement('span');text.className='toast-text';text.textContent=message;el.append(text);
+  if(undo){const b=document.createElement('button');b.className='text-button';b.textContent='Desfazer';b.onclick=async()=>{b.disabled=true;try{await undo();hideToast(el);}catch(e){text.textContent=e.message;el.dataset.kind='error';b.disabled=false;}};el.append(b);}
+  el.hidden=true;void el.offsetWidth;el.hidden=false;toastTimer=setTimeout(()=>hideToast(el),undo?20000:kind==='error'?9000:6000);
 }
 let modalIndex=0;
 export function modal({title,body,submit='Salvar',onSubmit,onAction,wide=false,draftKey='',storage=sessionStorage,description=''}) {
@@ -50,17 +63,29 @@ export function modal({title,body,submit='Salvar',onSubmit,onAction,wide=false,d
   function close(force=false){
     if(saving)return;
     if(dirty&&!force){if(closingPrompt)return;closingPrompt=true;const confirmation=modal({title:'Fechar sem salvar?',body:`<p>${draftKey?'O rascunho continuará disponível neste aparelho quando você reabrir este formulário.':'As alterações deste formulário serão descartadas.'}</p>`,submit:'Fechar sem salvar',onSubmit:async()=>{dirty=false;close(true);}});confirmation.dialog.addEventListener('close',()=>closingPrompt=false,{once:true});return;}
-    d.close();
+    dismiss();
   }
-  function showError(message,fieldName){const error=errorNode();error.textContent=message;error.hidden=false;const target=fieldName&&form.elements.namedItem(fieldName);if(target){target.closest('details')?.setAttribute('open','');target.setAttribute('aria-invalid','true');target.setAttribute('aria-describedby',error.id);target.focus();}else error.focus();}
+  function dismiss(){if(!d.open||d.classList.contains('closing'))return;if(reducedMotion()){d.close();return;}d.classList.add('closing');setTimeout(()=>d.close(),160);}
+  function showError(message,fieldName){
+    form.querySelectorAll('.field-error').forEach(n=>n.remove());
+    const error=errorNode(),target=fieldName&&form.elements.namedItem(fieldName),holder=target?.closest?.('label.field');
+    if(target&&holder){
+      const note=document.createElement('small');note.className='field-error';note.id=`${id}-field-error`;note.setAttribute('role','alert');note.textContent=message;holder.append(note);
+      error.hidden=true;target.closest('details')?.setAttribute('open','');target.setAttribute('aria-invalid','true');target.setAttribute('aria-describedby',note.id);target.focus();return;
+    }
+    error.textContent=message;error.hidden=false;
+    if(target){target.closest('details')?.setAttribute('open','');target.setAttribute('aria-invalid','true');target.setAttribute('aria-describedby',error.id);target.focus();}else error.focus();
+  }
   const api={dialog:d,form,close,showError,draftRecovered:false,setDirty:()=>{dirty=true;saveDraft();},setTitle:text=>d.querySelector('h2').textContent=text};
   if(draftKey){try{const draft=JSON.parse(storage.getItem(draftKey)||'null');if(draft){api.draftRecovered=true;for(const [key,value]of Object.entries(draft)){const element=form.elements.namedItem(key);if(element&&element.type!=='file')element.value=value;}const note=document.createElement('p');note.className='inline-note';note.textContent='Rascunho recuperado neste aparelho. Revise antes de salvar.';form.querySelector('.modal-body').prepend(note);dirty=true;}}catch{}}
-  form.addEventListener('input',()=>{dirty=true;errorNode().hidden=true;form.querySelectorAll('[aria-invalid]').forEach(x=>x.removeAttribute('aria-invalid'));saveDraft();});form.addEventListener('change',()=>{dirty=true;saveDraft();});
+  form.addEventListener('input',()=>{dirty=true;errorNode().hidden=true;form.querySelectorAll('.field-error').forEach(n=>n.remove());form.querySelectorAll('[aria-invalid]').forEach(x=>{x.removeAttribute('aria-invalid');x.removeAttribute('aria-describedby');});saveDraft();});form.addEventListener('focusout',e=>{if(e.target.matches?.('input[inputmode=decimal]'))formatMoneyField(e.target);});form.addEventListener('change',()=>{dirty=true;saveDraft();});
   d.addEventListener('cancel',e=>{e.preventDefault();close();});
   d.addEventListener('click',e=>{const b=e.target.closest('button');if(b?.hasAttribute('data-modal-close'))close();else if(b?.dataset.action)Promise.resolve().then(()=>onAction?.(b.dataset.action,b,api)).catch(err=>showError(err.message||'Não foi possível concluir. Tente novamente.'));else if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();}});
   form.addEventListener('submit',async e=>{
     e.preventDefault();if(!onSubmit||saving)return;errorNode().hidden=true;
-    if(!form.checkValidity()){const invalid=form.querySelector(':invalid');showError(invalid?.validationMessage||'Revise os campos obrigatórios.',invalid?.name);return;}
+    if(!form.checkValidity()){const invalid=form.querySelector(':invalid'),label=invalid?.closest('label')?.querySelector('span')?.textContent.trim();
+      const message=invalid?.validity.valueMissing&&label?(invalid.tagName==='SELECT'?`Escolha uma opção em “${label}”.`:`Preencha “${label}”.`):invalid?.validationMessage||'Revise os campos obrigatórios.';
+      showError(message,invalid?.name);return;}
     const idleSubmitText=submitButton?.textContent;
     saving=true;form.setAttribute('aria-busy','true');if(submitButton){submitButton.disabled=true;submitButton.textContent='Salvando…';}
     try{const shouldClose=await onSubmit(form,api);dirty=false;if(draftKey)try{storage.removeItem(draftKey);}catch{}if(shouldClose!==false){saving=false;close(true);}}
