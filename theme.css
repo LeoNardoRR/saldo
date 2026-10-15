@@ -535,7 +535,8 @@ main[data-enter] .spark-dot{animation:fade .4s 1.2s ease both}
   .kpi-value{font-size:clamp(17px,5vw,22px);letter-spacing:-.02em}
   .hero-amount .financial-value,.kpi-value .financial-value{white-space:normal;overflow-wrap:anywhere}
   .kpi small{font-size:11px;line-height:1.35}
-  .quick{min-height:68px;font-size:12px;overflow-wrap:anywhere}
+  .quick-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .quick{flex-direction:row;min-height:48px;padding:8px;font-size:12px;overflow-wrap:normal}
   .panel{padding:16px;border-radius:16px}
   .section-heading{gap:10px;margin-bottom:16px}
   .section-heading h2{font-size:17px}
