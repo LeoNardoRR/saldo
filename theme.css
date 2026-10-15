@@ -478,3 +478,80 @@ main[data-enter] .spark-dot{animation:fade .4s 1.2s ease both}
 @media(max-width:359px){.kpis{grid-template-columns:1fr}.quick-row{grid-template-columns:1fr 1fr}.sk-kpis{grid-template-columns:1fr}}
 @keyframes sheet-up{from{transform:translateY(100%)}}
 @keyframes sheet-down{to{transform:translateY(100%)}}
+
+/* Compact phone layout; keep the same navigation and financial content. */
+@media(max-width:959px){
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  .app-shell{padding-bottom:0}
+  .main-shell{
+    padding-left:max(16px,env(safe-area-inset-left));
+    padding-right:max(16px,env(safe-area-inset-right));
+    padding-bottom:calc(104px + env(safe-area-inset-bottom));
+  }
+  .app-header{padding-top:calc(16px + env(safe-area-inset-top))}
+  .app-header>div:first-child{min-width:0}
+  .mobile-nav{
+    left:max(12px,env(safe-area-inset-left));
+    right:max(12px,env(safe-area-inset-right));
+  }
+  .period-control .icon-button{width:44px;min-width:44px;min-height:44px}
+  input[type=date],input[type=month]{min-inline-size:0;max-inline-size:100%}
+}
+@media(max-width:639px){
+  .app-header{gap:12px;padding-bottom:8px;align-items:flex-start}
+  .app-header h1{font-size:24px;letter-spacing:-.7px}
+  .header-kicker{display:none}
+  .header-subtitle{font-size:13px;line-height:1.4;max-width:none}
+  .header-actions{gap:0}
+  .context-bar{margin:8px 0 16px;min-height:0}
+  .period-control{width:100%;margin-bottom:2px}
+  .month-label{flex:1;min-width:0}
+  .month-label input{width:100%;font-size:16px;min-height:44px;text-align:center}
+  .sync-control{display:grid;grid-template-columns:7px minmax(0,1fr) auto;align-items:center;gap:8px;padding:0;min-height:44px}
+  .sync-control .status-dot{margin:0}
+  .sync-control #sync-status{font-size:12px;line-height:1.35}
+  .sync-control .text-button{font-size:12px;max-width:132px;white-space:normal;text-align:right;line-height:1.3}
+  .dash{gap:12px}
+  .hero{padding:18px 20px;border-radius:20px}
+  .hero-top{gap:8px}
+  .hero-label{font-size:13px;gap:6px;min-width:0}
+  .hero-label .icon{width:18px;height:18px}
+  .hero-link{min-height:44px;font-size:12px;flex-shrink:0;padding:6px;margin:-6px}
+  .hero-amount{font-size:clamp(32px,10.5vw,44px);letter-spacing:-.03em;margin-top:6px}
+  .hero-sub{font-size:12px;line-height:1.4;margin-top:6px}
+  .hero-accounts{gap:6px;margin-top:12px}
+  .hero-accounts .chip{max-width:100%;min-height:44px;padding:6px 10px;flex-wrap:wrap;gap:2px 8px;border-radius:12px;line-height:1.3}
+  .hero-accounts .chip span{overflow-wrap:anywhere;min-width:0}
+  .hero-trend{padding-top:14px}
+  .hero-trend-head{font-size:11px;margin-bottom:4px}
+  .spark-wrap{height:40px}
+  .hero-trend-foot{margin-top:4px;font-size:11px}
+  .kpis{gap:10px;grid-auto-rows:auto;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi{padding:12px;gap:5px;border-radius:16px}
+  .kpi-head{gap:6px;min-height:24px;flex-wrap:wrap}
+  .kpi-icon{width:24px;height:24px;flex-basis:24px;border-radius:8px}
+  .kpi-icon .icon{width:16px;height:16px}
+  .kpi-label{font-size:12px;white-space:normal}
+  .kpi-value{font-size:clamp(17px,5vw,22px);letter-spacing:-.02em}
+  .hero-amount .financial-value,.kpi-value .financial-value{white-space:normal;overflow-wrap:anywhere}
+  .kpi small{font-size:11px;line-height:1.35}
+  .quick{min-height:68px;font-size:12px;overflow-wrap:anywhere}
+  .panel{padding:16px;border-radius:16px}
+  .section-heading{gap:10px;margin-bottom:16px}
+  .section-heading h2{font-size:17px}
+  .section-heading>div{flex-basis:140px}
+  .mobile-nav{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 60px minmax(0,1fr) minmax(0,1fr);border-radius:22px}
+  .mobile-nav .fab{margin-top:-10px;width:52px;height:52px;min-height:52px;border-radius:18px}
+  .filters-row input,.filters-row select,.mini-select,.field input,.field select,.field textarea{font-size:16px}
+  .value-field input{font-size:30px}
+  dialog,.modal-wide{
+    width:100%;max-width:100%;max-height:calc(100dvh - env(safe-area-inset-top) - 12px);
+    padding-bottom:0;scroll-padding-bottom:96px;
+  }
+  .modal-head{position:sticky;top:0;padding:26px 16px 16px}
+  .modal-head>div{min-width:0}
+  .modal-head h2{overflow-wrap:anywhere}
+  .modal-body{padding:16px}
+  .modal-footer{padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .modal-footer .button{min-width:0}
+}
