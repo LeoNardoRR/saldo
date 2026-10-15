@@ -1,4 +1,4 @@
-import {accountBalance,invoice,invoiceMonth,normalized,shiftMonth} from './finance.js';
+import {accountBalance,invoice,invoiceMonth,normalized,shiftMonth,summary} from './finance.js';
 
 export const today = () => {
   const d = new Date();
@@ -11,6 +11,14 @@ export const monthLabel = month => new Date(`${month}-02T12:00:00`).toLocaleDate
 export const plural = (n, one, many = `${one}s`) => `${n} ${n===1?one:many}`;
 export const daysIn = month => new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate();
 export const inMonth = (date, month) => Boolean(date?.startsWith(month));
+// Monthly income minus expenses, including plans. Opening balances and transfers
+// are not earnings or spending; card purchases count once, without the bill payment.
+export function monthPlan(state, month) {
+  const rows=state.entries.filter(e=>inMonth(e.date,month)&&e.type!=='transfer');
+  const known=rows.filter(e=>e.status==='planned'||e.status==='settled');
+  const totals=summary(known,month,{planned:true});
+  return {income:totals.income,expense:totals.expense,balance:totals.balance,count:known.length,unconfirmed:rows.filter(e=>e.status==='legacy').length};
+}
 export const accountFor = (state, name) => state.accounts.find(a => a.name === name);
 export const isCardPayment = (state, e) => e.type === 'transfer' && accountFor(state, e.toAccount)?.type === 'credit';
 export const isCardPurchase = (state, e) => e.type === 'expense' && accountFor(state, e.account)?.type === 'credit';

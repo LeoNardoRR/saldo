@@ -1,12 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {accountBalance,validSettings,shiftMonth} from './finance.js';
-import {available,cashSummary,agendaItems,pendingTotals,categoryTotals,filteredEntries,recurringGroups,compareCash,csvText,today} from './product.js';
+import {available,cashSummary,agendaItems,pendingTotals,categoryTotals,filteredEntries,recurringGroups,compareCash,csvText,today,monthPlan} from './product.js';
 
 const bank={id:'bank',name:'Banco',type:'bank',opening:100000,openingDate:'2020-01-01',closingDay:25,dueDay:5};
 const card={id:'card',name:'Cartão',type:'credit',opening:0,openingDate:'2020-01-01',closingDay:25,dueDay:5};
 const entry=(id,type,cents,extra={})=>({id,type,cents,description:id,category:type==='income'?'Salário':'Alimentação',account:'Banco',date:'2025-05-10',dueDate:'2025-05-10',status:'settled',settledDate:'2025-05-10',...extra});
 const state=entries=>({entries,accounts:[bank,card],settings:{profile:{name:'',photo:''},goals:[],budgets:[]}});
+
+test('Previsão mensal mostra déficit mesmo com saldo inicial e salário ainda previsto',()=>{
+  const s=state([entry('salario','income',300000,{status:'planned',settledDate:''}),entry('contas','expense',301249,{status:'planned',settledDate:''})]);
+  assert.deepEqual(monthPlan(s,'2025-05'),{income:300000,expense:301249,balance:-1249,count:2,unconfirmed:0});
+  assert.equal(available(s,'2025-05-31'),100000);
+});
+test('Previsão mensal combina realizados e previstos sem duplicar cartão e transferências',()=>{
+  const s=state([entry('salario','income',300000),entry('compra','expense',40000,{account:'Cartão'}),entry('fatura','transfer',40000,{toAccount:'Cartão'}),entry('previsto','expense',20000,{status:'planned',settledDate:''}),entry('outro-mes','expense',90000,{date:'2025-06-10'})]);
+  assert.deepEqual(monthPlan(s,'2025-05'),{income:300000,expense:60000,balance:240000,count:3,unconfirmed:0});
+});
+test('Previsão mensal usa referência e separa registros sem confirmação',()=>{
+  const s=state([entry('conta','expense',10000,{status:'planned',dueDate:'2025-06-05'}),entry('antigo','income',500000,{status:'legacy'})]);
+  assert.deepEqual(monthPlan(s,'2025-05'),{income:0,expense:10000,balance:-10000,count:1,unconfirmed:1});
+  assert.deepEqual(monthPlan(s,'2025-06'),{income:0,expense:0,balance:0,count:0,unconfirmed:0});
+});
 
 test('Saldo inicial futuro fica fora do disponível até a data de abertura',()=>{
   const future={...bank,opening:70000,openingDate:'2027-01-01'};
