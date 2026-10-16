@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><rect width="512" height="512" fill="#244d40"/><g transform="translate(76.8 76.8) scale(9.95555556)" fill="#f1f5e9"><path d="M30 4H17C9.82 4 4 9.82 4 17v3h8v-3a5 5 0 0 1 5-5h13V4Z"/><path d="M6 32h13c7.18 0 13-5.82 13-13v-3h-8v3a5 5 0 0 1-5 5H6v8Z"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Saldo</title>
+  <rect width="512" height="512" fill="#103e33"/>
+  <path transform="translate(70.4 70.4) scale(3.712)" fill="#a9ebc9" d="M79 12H45C25 12 13 24 13 42V52H32V42C32 34 37 31 45 31H79V12ZM21 88H55C75 88 87 76 87 58V48H68V58C68 66 63 69 55 69H21V88Z"/>
+</svg>

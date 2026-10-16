@@ -4,6 +4,12 @@ Informação financeira primeiro. Papel quente, **pinho profundo** como marca, *
 
 Implementação: `style.css` (estrutura e responsividade herdadas), `theme.css` (tokens e componentes atuais, carregado depois), `charts.js` (gráficos), `fx.js` (movimento, tema, tooltip), `views.js`/`flows.js`/`ui.js` (marcação).
 
+## Marca
+
+Símbolo aprovado: **S geométrico**, com duas formas opostas, terminais horizontais e respiro central. `assets/logo.svg` é a marca vetorial; a interface usa sua silhueta com a cor de marca do tema. O nome continua em Manrope.
+
+`assets/icons/app-icon.svg` é a matriz de 512 px para os PNGs de 192/512 px, a versão maskable de 512 px e o apple-touch-icon de 180 px. Fundo pinho `#103e33`, símbolo menta `#a9ebc9`, sem cantos arredondados no arquivo: o sistema operacional aplica o recorte. A marca fica centralizada dentro da área segura do ícone.
+
 ## Tokens
 
 | Grupo | Claro | Escuro |
