@@ -19,18 +19,18 @@ Implementação: `style.css` (estrutura e responsividade herdadas), `theme.css` 
 | Elevação | `--elev-1` (cartões), `--elev-2` (hover/sobrepostos leves), `--shadow-overlay` (modais) | sombra mais profunda |
 | Movimento | `--dur-1 150ms`, `--dur-2 220ms`, `--dur-3 300ms`, `--ease cubic-bezier(.2,.8,.2,1)` | — |
 
-Tipografia: Manrope em títulos, marca e números; DM Sans em conteúdo (fontes locais). Valores principais 40–60 px (`.hero-amount`), indicadores 21–28 px, títulos de seção 18 px, corpo 14 px, apoio 12–13 px. Dinheiro sempre com algarismos tabulares e **nunca quebra no meio** (`.financial-value{white-space:nowrap}`).
+Tipografia: Manrope em títulos, marca e números; DM Sans em conteúdo (fontes locais). Valores principais 40–60 px (`.hero-amount`), indicadores 21–28 px, títulos de seção 18 px, corpo 14 px, apoio 12–13 px. Dinheiro com algarismos tabulares. O padrão é não quebrar, com exceções responsivas para valores longos em espaços estreitos.
 
-Todos os pares de texto/fundo medidos nos dois temas passam em 4,5 : 1 (varredura por DOM em todas as páginas); marcas gráficas e bordas de campo passam em 3 : 1.
+Alvos de contraste: texto de corpo 4,5 : 1; texto grande, marcas gráficas e bordas de campo 3 : 1. A inspeção visual e os dispositivos de teste devem acompanhar a validação dos tokens.
 
 ## Layout
 
 - **≥ 1280 px**: sidebar de 256 px, conteúdo até 1640 px; **≥ 1980 px** o conteúdo é centralizado ao lado do menu.
 - **960–1279 px**: sidebar de 232 px.
 - **Dashboard** (`.dash`): em ≥ 1100 px, grade de 12 colunas: saldo (7) + indicadores 2×2 (5); ações rápidas (12); evolução (7) + categorias (5); atenção (6) + últimos registros (6). Abaixo disso, uma coluna.
-- **≤ 959 px**: sem sidebar; barra inferior flutuante com botão central de ação (`.fab`) que abre a folha "Novo registro"; "Mais" agrupa Orçamento e metas, Recorrências, Configurações e perfil.
-- **≤ 639 px**: modais viram **folhas** ancoradas embaixo (alça, raio superior de 26 px, área segura); ações rápidas em 4 colunas com ícone acima do texto; rosca empilhada.
-- **≤ 359 px**: indicadores em coluna única.
+- **≤ 959 px**: sem sidebar; barra inferior até a borda da tela com botão central de ação (`.fab`) que abre a folha "Novo registro"; "Mais" agrupa Orçamento e metas, Recorrências, Configurações e perfil.
+- **≤ 639 px**: modais viram **folhas** ancoradas embaixo (alça, raio superior de 26 px, área segura); ações rápidas em duas colunas com ícone ao lado do texto; rosca empilhada.
+- **≤ 359 px**: indicadores mantêm duas colunas; formulários e resumos de fatura se empilham quando necessário.
 - Alvos de toque de 44 px em telas pequenas ou de toque; mínimo de 24 px em qualquer caso.
 
 ## Componentes
@@ -61,3 +61,13 @@ Todos os pares de texto/fundo medidos nos dois temas passam em 4,5 : 1 (varredur
 ## Acessibilidade
 
 Foco visível de 2 px, `aria-current` na navegação, `aria-pressed` em seletores, gráficos com equivalente textual, erros ligados ao campo por `aria-describedby`, `role=alert` em erros. Não se afirma certificação; VoiceOver/TalkBack e aparelhos físicos exigem homologação.
+
+
+## Revisão mobile de 15/10/2026
+- Navegação inferior ocupa toda a largura e encosta na borda inferior. A área segura é preenchimento interno, sem margem externa. O conteúdo e a barra são regiões separadas do layout flexível; a barra nunca cobre a área rolável.
+- Botão central de 46 px alinhado aos demais itens, sem deslocamento vertical ou halo.
+- Celular: KPIs e atalhos em duas colunas. Valores longos podem quebrar para preservar o conteúdo. Filtros abertos usam toda a largura.
+- Diálogos: cabeçalho e rodapé fora da área de rolagem. O corpo rola entre eles; rodapé respeita a área segura.
+- Mais e Novo registro compartilham linhas com ícone, título e descrição, separadas por divisórias.
+- Campos com fonte mínima de 16 px no celular; botões, campos e ações de lista com área de toque de pelo menos 44 px (botão do aviso compacto: 40 px).
+- Previsão mensal mantém valores visíveis e explicação em um detalhe expansível. Valores, datas e fórmulas não são alterados pela revisão visual.
