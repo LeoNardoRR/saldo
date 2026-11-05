@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="ios.css">
-  <script>try{document.documentElement.dataset.theme=localStorage.getItem("saldo.theme.v1")==="dark"?"dark":"light"}catch{document.documentElement.dataset.theme="light"}</script>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("saldo.theme.v1")==="light"?"light":"dark"}catch{document.documentElement.dataset.theme="dark"}</script>
   <title>Saldo — seu dinheiro, com clareza</title>
 </head>
 <body>
@@ -26,7 +26,7 @@
       <button class="button primary new-entry" id="add" type="button" aria-keyshortcuts="N"><span data-icon="plus"></span><span>Nova movimentação</span><kbd aria-hidden="true">N</kbd></button>
       <nav id="main-nav" aria-label="Seções">
         <p class="nav-group">Visão</p>
-        <a href="#overview" data-page="overview"><span data-icon="grid"></span>Visão geral</a>
+        <a href="#overview" data-page="overview"><span data-icon="home"></span>Visão geral</a>
         <a href="#transactions" data-page="transactions"><span data-icon="list"></span>Movimentações</a>
         <a href="#accounts" data-page="accounts"><span data-icon="wallet"></span>Contas e cartões</a>
         <p class="nav-group">Planejamento</p>
@@ -55,7 +55,7 @@
     </div>
   </div>
   <nav class="mobile-nav" aria-label="Navegação no celular">
-    <a href="#overview" data-page="overview"><span data-icon="grid"></span><span>Início</span></a>
+    <a href="#overview" data-page="overview"><span data-icon="home"></span><span>Início</span></a>
     <a href="#transactions" data-page="transactions"><span data-icon="list"></span><span>Registros</span></a>
     <button type="button" class="fab" data-action="quick" aria-label="Novo registro"><span data-icon="plus"></span></button>
     <a href="#accounts" data-page="accounts"><span data-icon="wallet"></span><span>Contas</span></a>

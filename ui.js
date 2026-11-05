@@ -6,12 +6,21 @@ const brlNumber = cents => (cents/100).toLocaleString('pt-BR',{minimumFractionDi
 export function formatMoneyField(el){const raw=el.value.trim();if(!raw)return;const negative=raw.startsWith('-'),cents=parseMoney(negative?raw.slice(1).trim():raw,true);if(cents!==null)el.value=(negative?'-':'')+brlNumber(cents);}
 export const esc = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const paths={
+  home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/>',
+  chart:'<path d="M4 4v16h16M8 15v-4M13 15V7M18 15V4"/>',
+  receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3ZM9 7h6M9 11h6M9 15h3"/>',
+  food:'<path d="M4 3v5a3 3 0 0 0 6 0V3M7 3v18M20 21V3c-4 2-5 6-5 10h5"/>',
+  car:'<path d="m5 7 2-4h10l2 4 2 4v7H3v-7l2-4ZM3 11h18M7 14h1M16 14h1M5 18v3M19 18v3"/>',
+  heart:'<path d="M20 5a5 5 0 0 0-8 1 5 5 0 0 0-8-1c-3 3-1 7 1 9l7 7 7-7c2-2 4-6 1-9Z"/>',
+  book:'<path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1ZM12 5v15"/>',
+  bag:'<path d="M5 7h14l2 14H3L5 7ZM8 7V6a4 4 0 0 1 8 0v1"/>',
+
   grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
   wallet:'<path d="M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M3 7h16a2 2 0 0 1 2 2v6h-6a3 3 0 0 1 0-6h6M16 12h.01"/>',
   target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
   repeat:'<path d="m17 2 4 4-4 4M3 11V8a2 2 0 0 1 2-2h16M7 22l-4-4 4-4M21 13v3a2 2 0 0 1-2 2H3"/>',
-  settings:'<path d="m9 3-1 3-3 1-1 4 2 2-1 3 3 3 3-1 2 2 4-1 1-3 3-1 1-4-2-2 1-3-3-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/>',
+  settings:'<path d="M4 7h16M4 17h16M9 4v6M15 14v6"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',
   'chevron-left':'<path d="m15 18-6-6 6-6"/>','chevron-right':'<path d="m9 18 6-6-6-6"/>',
   'arrow-down':'<path d="M12 4v16m-6-6 6 6 6-6"/>','arrow-up':'<path d="M12 20V4m-6 6 6-6 6 6"/>','arrow-right':'<path d="M4 12h16m-6-6 6 6-6 6"/>',
@@ -29,7 +38,12 @@ const paths={
   shield:'<path d="m12 3 8 3v6c0 5-8 9-8 9S4 17 4 12V6l8-3Z"/><path d="m8 12 3 3 5-6"/>',
   camera:'<path d="M8 5 6 8H3v13h18V8h-3l-2-3Z"/><circle cx="12" cy="14" r="4"/>',transfer:'<path d="M3 7h18m-4-4 4 4-4 4M21 17H3m4-4-4 4 4 4"/>',
 };
-export const icon = (name,cls='') => `<svg class="icon ${esc(cls)}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.grid}</svg>`;
+export const icon = (name,cls='') => `<svg class="icon ${esc(cls)}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.grid}</svg>`;
+export function categoryIcon(name='') {
+  const key=String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const symbols=[[/alimenta|mercado|restaurante/,'food'],[/moradia|aluguel|casa/,'home'],[/transporte|combustivel|uber/,'car'],[/saude|academia|farmacia/,'heart'],[/educa|curso|escola/,'book'],[/compra|roupa/,'bag'],[/assinatura|recorrente/,'repeat'],[/salario|renda/,'bank'],[/imposto|conta|luz|agua|internet/,'receipt'],[/lazer|viagem/,'spark']];
+  return icon(symbols.find(([match])=>match.test(key))?.[1]||'receipt');
+}
 export function hydrateIcons(root=document) {root.querySelectorAll('[data-icon]').forEach(el=>{el.innerHTML=icon(el.dataset.icon);delete el.dataset.icon;});}
 export const action = (name,label,{id='',cls='button secondary',iconName='',extra=''}={}) => `<button type="button" class="${esc(cls)}" data-action="${esc(name)}" ${id?`data-id="${esc(id)}"`:''} ${extra}>${iconName?icon(iconName):''}${esc(label)}</button>`;
 export const badge = (label,kind='neutral') => `<span class="badge ${esc(kind)}">${esc(label)}</span>`;

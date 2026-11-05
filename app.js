@@ -127,6 +127,8 @@ function invoke(name,button){
     case 'install':return $('#install-app').click();
     case 'dismiss-setup':ctx.setPreference('setupDismissed',true);return ctx.render();
     case 'change-month':return ctx.setMonth(id);
+    case 'overview-section':ctx.overviewSection=['summary','analysis','activity'].includes(id)?id:'summary';return ctx.render();
+    case 'balance-range':
     case 'hero-range':ctx.heroRange=['month','6m','12m'].includes(id)?id:'month';return ctx.render();
     case 'more-categories':ctx.categoryExpanded=!ctx.categoryExpanded;return ctx.render();
     case 'quick':return modal({title:'Novo registro',body:`<div class="sheet-actions">${[['expense','Nova despesa','arrow-up','Saiu dinheiro ou compra no cartão'],['income','Nova receita','arrow-down','Salário, venda ou outro recebimento'],['transfer','Transferência','transfer','Entre suas contas ou pagamento de fatura']].map(([type,label,ic,help])=>`<button type="button" class="sheet-action" data-action="sheet-entry" data-id="${type}">${icon(ic)}<span><strong>${label}</strong><small>${help}</small></span></button>`).join('')}<button type="button" class="sheet-action" data-action="sheet-agenda">${icon('clock')}<span><strong>Vencimentos</strong><small>Confirmar o que já foi pago ou recebido</small></span></button></div>`,onAction:(name,b,owner)=>{owner.close(true);if(name==='sheet-entry')flows.entryForm(ctx,null,{type:b.dataset.id});if(name==='sheet-agenda')flows.agenda(ctx);}});
