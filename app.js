@@ -2,7 +2,7 @@ import {selectWorkspace} from './identity.js';
 import {createStore,STORE_KEY} from './store.js';
 import {createSync} from './sync.js';
 import {dataState} from './sync-merge.js';
-import {shiftMonth} from './finance.js';
+import {bindMonthNavigation} from './month-navigation.js';
 import {today,money,filteredEntries} from './product.js';
 import {$,esc,icon,hydrateIcons,avatar,modal,action,download} from './ui.js';
 import {pages,pageMeta} from './views.js';
@@ -26,7 +26,7 @@ let lastData='',firstCloud=true;
 function saveContext(){try{sessionStorage.setItem(workspace.monthKey,ctx.month);}catch{}}
 function updateHeader(){
   const [title,subtitle]=pageMeta[ctx.page];$('#page-title').textContent=title;$('#page-subtitle').textContent=subtitle;document.title=`${title} · Saldo`;
-  $('#month').value=ctx.month;$('#period-control').hidden=ctx.page==='settings'||ctx.page==='recurring';
+  monthNavigation.render();$('#period-control').hidden=ctx.page==='settings'||ctx.page==='recurring';
   document.querySelectorAll('[data-page]').forEach(a=>{if(a.dataset.page===ctx.page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   const more=$('.mobile-nav [data-action=more]');if(['settings','recurring','planning'].includes(ctx.page))more.setAttribute('aria-current','page');else more.removeAttribute('aria-current');
   document.body.classList.toggle('values-hidden',Boolean(ctx.preferences.hidden));
@@ -53,7 +53,8 @@ ctx.render=()=>{
   if(ctx.store?.legacyChanged())main.insertAdjacentHTML('afterbegin',`<div class="alert warning"><div><strong>Uma versão antiga alterou dados neste aparelho</strong><p>Salve um backup na janela antiga antes de restaurar aqui. Feche versões antigas para evitar divergências.</p></div></div>`);
 };
 ctx.navigate=page=>{if(!pages[page])return;if(ctx.page!==page){ctx.page=page;ctx.selected.clear();ctx.render();window.scrollTo({top:0,behavior:'instant'});}if(location.hash!==`#${page}`)location.hash=page;};
-ctx.setMonth=month=>{ctx.month=month;ctx.filter.page=1;ctx.selected.clear();saveContext();ctx.render();};
+ctx.setMonth=month=>{if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)||Number(month.slice(0,4))<1)return;ctx.month=month;ctx.filter.page=1;ctx.selected.clear();saveContext();ctx.render();};
+const monthNavigation=bindMonthNavigation({getMonth:()=>ctx.month,onChange:month=>ctx.setMonth(month),currentMonth:()=>today().slice(0,7)});
 
 ctx.store=createStore({storage:workspace.storage,onChange:state=>{
   ctx.state=state;const next=JSON.stringify(dataState(state));if(next!==lastData){lastData=next;ctx.render();document.dispatchEvent(new Event('saldo:data-change'));}
@@ -159,9 +160,6 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')document.que
 document.addEventListener('keydown',event=>{if(event.key.toLowerCase()!=='n'||event.metaKey||event.ctrlKey||event.altKey||event.defaultPrevented)return;if(event.target.closest?.('input,textarea,select,[contenteditable]')||document.querySelector('dialog[open]')||!ctx.state)return;event.preventDefault();flows.entryForm(ctx);});
 document.addEventListener('click',event=>{document.querySelectorAll('details.row-menu[open]').forEach(x=>{if(!x.contains(event.target))x.open=false;});});
 window.addEventListener('hashchange',()=>{const page=aliases[location.hash.slice(1)]||'overview';ctx.navigate(page);document.querySelectorAll('dialog:not(#install-dialog)').forEach(d=>{if(d.querySelector('a[href^="#"]'))d.close();});});
-$('#month').onchange=event=>ctx.setMonth(event.target.value);
-$('#prev-month').onclick=()=>ctx.setMonth(shiftMonth(`${ctx.month}-01`,-1).slice(0,7));
-$('#next-month').onclick=()=>ctx.setMonth(shiftMonth(`${ctx.month}-01`,1).slice(0,7));
 $('#add').onclick=()=>flows.entryForm(ctx);
 $('#profile-open').onclick=()=>flows.profileForm(ctx);
 $('#header-profile').onclick=()=>flows.profileForm(ctx);

@@ -47,7 +47,18 @@
         </div>
       </header>
       <div class="context-bar">
-        <div class="period-control" id="period-control"><button class="icon-button" id="prev-month" aria-label="Mês anterior"><span data-icon="chevron-left"></span></button><label class="month-label"><span class="sr-only">Mês de referência</span><input type="month" id="month" aria-label="Mês de referência"></label><button class="icon-button" id="next-month" aria-label="Próximo mês"><span data-icon="chevron-right"></span></button></div>
+        <div class="period-control" id="period-control">
+          <div class="month-navigation">
+            <button type="button" class="icon-button" id="prev-month" aria-label="Mês anterior"><span data-icon="chevron-left"></span></button>
+            <button type="button" class="month-trigger" id="month" aria-expanded="false" aria-controls="month-picker" aria-label="Escolher mês"><span><strong id="month-name">Mês</strong><span id="month-year"></span></span><span data-icon="chevron-down"></span></button>
+            <button type="button" class="icon-button" id="next-month" aria-label="Próximo mês"><span data-icon="chevron-right"></span></button>
+          </div>
+          <div id="month-picker" class="month-picker" hidden>
+            <div class="month-picker-year"><button type="button" class="icon-button" id="previous-year" aria-label="Ano anterior"><span data-icon="chevron-left"></span></button><strong id="picker-year" aria-live="polite"></strong><button type="button" class="icon-button" id="next-year" aria-label="Próximo ano"><span data-icon="chevron-right"></span></button></div>
+            <div class="month-grid" id="month-grid" role="group" aria-label="Escolha o mês"></div>
+            <button type="button" class="month-today" id="current-month">Ir para o mês atual</button>
+          </div>
+        </div>
         <div class="sync-control" id="sync-control" data-kind="busy"><span class="status-dot" aria-hidden="true"></span><span id="sync-status" role="status" aria-live="polite">Abrindo seu espaço…</span><button id="sync-action" class="text-button" hidden>Sincronizar agora</button></div>
       </div>
       <main id="main-content" tabindex="-1" aria-busy="true"><div class="page-skeleton" aria-label="Carregando seu financeiro"><div class="sk-hero"></div><div class="sk-kpis"><div></div><div></div><div></div><div></div></div><div class="sk-wide"></div><div class="sk-wide"></div></div></main>

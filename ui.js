@@ -24,7 +24,7 @@ const paths={
   repeat:'<path d="m17 2 4 4-4 4M3 11V8a2 2 0 0 1 2-2h16M7 22l-4-4 4-4M21 13v3a2 2 0 0 1-2 2H3"/>',
   settings:'<path d="M4 7h16M4 17h16M9 4v6M15 14v6"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',
-  'chevron-left':'<path d="m15 18-6-6 6-6"/>','chevron-right':'<path d="m9 18 6-6-6-6"/>',
+  'chevron-left':'<path d="m15 18-6-6 6-6"/>','chevron-right':'<path d="m9 18 6-6-6-6"/>','chevron-down':'<path d="m6 9 6 6 6-6"/>',
   'arrow-down':'<path d="M12 4v16m-6-6 6 6 6-6"/>','arrow-up':'<path d="M12 20V4m-6 6 6-6 6 6"/>','arrow-right':'<path d="M4 12h16m-6-6 6 6-6 6"/>',
   eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
   'eye-off':'<path d="m3 3 18 18M10 5h2c7 0 10 7 10 7a18 18 0 0 1-4 5M6 6a19 19 0 0 0-4 6s3 7 10 7a12 12 0 0 0 5-1"/>',
