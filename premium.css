@@ -21,3 +21,18 @@ button,input,select,textarea{font:inherit}button,a,input,select,textarea{touch-a
 
 .finance-table-host [data-slot=table-container]{width:100%;overflow-x:auto}.finance-chart{font-variant-numeric:tabular-nums}.finance-chart .recharts-cartesian-axis-tick-value{fill:var(--muted)}
 @media(max-width:959px){.finance-table-host{display:none}}
+
+/* Anchor navigation to the viewport; keep the home-indicator inset inside the bar. */
+@media(max-width:959px){
+  .mobile-nav{
+    left:0;
+    right:0;
+    bottom:0;
+    padding:6px max(12px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));
+    border-width:1px 0 0;
+    border-radius:18px 18px 0 0;
+    box-shadow:0 -4px 18px #00000012;
+  }
+  .app-shell{padding-bottom:0}
+  .toast,.update-banner{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+}
