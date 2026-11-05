@@ -83,3 +83,21 @@ test('gráficos da visão geral: área, mini-linha, ritmo e fluxo', () => {
   assert.ok(!flow.includes('<b>x</b>'),'nome de categoria precisa ser escapado');
   assert.equal(flowChart({sources:[],targets:[],income:0,expense:0,surplus:0,deficit:0}),'');
 });
+
+test('Curvas preservam os pontos e os controles ficam dentro de cada intervalo',async()=>{
+  const {smoothPath}=await import('./charts.js');
+  const points=[[0,80],[25,20],[50,20],[75,90],[100,10]];
+  const path=smoothPath(points);
+  assert.ok(path.startsWith('M0.00 80.00'));
+  const segments=[...path.matchAll(/C([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+)/g)];
+  assert.equal(segments.length,points.length-1);
+  segments.forEach((match,i)=>{
+    const [cx1,cy1,cx2,cy2,x,y]=match.slice(1).map(Number),[px,py]=points[i];
+    assert.deepEqual([x,y],points[i+1]);
+    assert.ok(cx1>=px&&cx2<=x);
+    assert.ok(cy1>=Math.min(py,y)&&cy1<=Math.max(py,y));
+    assert.ok(cy2>=Math.min(py,y)&&cy2<=Math.max(py,y));
+  });
+  assert.equal(smoothPath([]),'');
+  assert.equal(smoothPath([[0,50],[100,50]]),'M0.00 50.00C50.00 50.00 50.00 50.00 100.00 50.00');
+});

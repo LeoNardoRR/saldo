@@ -69,14 +69,20 @@ export const dot=index=>`<i class="dot" style="background:var(--c${(index%DONUT_
 
 // ---- Visão geral 5.1 ----
 const pathOf=pts=>pts.map(([x,y],i)=>`${i?'L':'M'}${x.toFixed(2)} ${y.toFixed(2)}`).join('');
+// Cubic segments stay within adjacent points: smooth appearance without invented extrema.
+export const smoothPath=pts=>pts.map(([x,y],i)=>{
+  if(!i)return `M${x.toFixed(2)} ${y.toFixed(2)}`;
+  const [px,py]=pts[i-1],mid=((px+x)/2).toFixed(2);
+  return `C${mid} ${py.toFixed(2)} ${mid} ${y.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)}`;
+}).join('');
 const scaleY=(values,top=8,bottom=92)=>{const min=Math.min(...values),max=Math.max(...values),span=max-min||1;return v=>bottom-(v-min)/span*(bottom-top);};
 
 // Área do saldo no hero. `points` = [{date,value}]; `label(date)` e `cash(value)` formatam o tooltip.
-export function areaChart(points,{label=d=>d,cash=money}={}){
+export function areaChart(points,{label=d=>d,cash=money,id='area-fill'}={}){
   if(points.length<2)return '';
-  const values=points.map(p=>p.value),low=Math.min(...values),high=Math.max(...values),y=scaleY([...values,low-(high-low)*.35],6,96),pts=points.map((p,i)=>[i/(points.length-1)*100,y(p.value)]),line=pathOf(pts);
+  const values=points.map(p=>p.value),low=Math.min(...values),high=Math.max(...values),y=scaleY([...values,low-(high-low)*.35],6,96),pts=points.map((p,i)=>[i/(points.length-1)*100,y(p.value)]),line=smoothPath(pts);
   const step=Math.max(1,Math.ceil(points.length/40)),zones=points.map((p,i)=>i%step&&i!==points.length-1?'':`<span class="area-zone" style="left:${(i/(points.length-1)*100).toFixed(2)}%;--y:${pts[i][1].toFixed(2)}%" data-tip-title="${esc(label(p.date))}" data-tip="${esc(`Saldo::${cash(p.value)}`)}"></span>`).join('');
-  return `<div class="area"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs><linearGradient id="area-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--hero-accent)" stop-opacity=".16"/><stop offset="1" stop-color="var(--hero-accent)" stop-opacity="0"/></linearGradient></defs><path class="area-fill" d="${line}L100 100L0 100Z"/><path class="area-line" d="${line}" vector-effect="non-scaling-stroke"/></svg><span class="area-end" style="top:${pts.at(-1)[1].toFixed(2)}%" aria-hidden="true"></span><div class="area-zones" aria-hidden="true">${zones}</div></div>`;
+  return `<div class="area"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs><linearGradient id="${esc(id)}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--hero-accent)" stop-opacity=".44"/><stop offset="1" stop-color="var(--hero-accent)" stop-opacity="0"/></linearGradient></defs><path class="area-fill" style="fill:url(#${esc(id)})" d="${line}L100 100L0 100Z"/><path class="area-line" d="${line}" vector-effect="non-scaling-stroke"/></svg><span class="area-end" style="top:${pts.at(-1)[1].toFixed(2)}%" aria-hidden="true"></span><div class="area-zones" aria-hidden="true">${zones}</div></div>`;
 }
 
 // Linha mínima para os indicadores.
@@ -92,7 +98,7 @@ export function paceChart({current,previous,days}){
   const pts=list=>list.map((v,i)=>[span>1?i/(span-1)*100:0,100-v/max*100]);
   const now=pts(current),before=pts(previous);
   const end=now.at(-1);
-  return `<div class="pace"><div class="pace-axis" aria-hidden="true"><span>${axisLabel(max)}</span><span>${axisLabel(max/2)}</span><span>R$ 0</span></div><div class="pace-plot"><div class="pace-grid" aria-hidden="true"><i></i><i></i><i></i></div><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">${before.length>1?`<path class="pace-before" d="${pathOf(before)}" vector-effect="non-scaling-stroke"/>`:''}${now.length>1?`<path class="pace-fill" d="${pathOf(now)}L${end[0].toFixed(2)} 100L0 100Z"/><path class="pace-now" d="${pathOf(now)}" vector-effect="non-scaling-stroke"/>`:''}</svg>${end?`<span class="pace-dot" style="left:${end[0].toFixed(2)}%;top:${end[1].toFixed(2)}%" aria-hidden="true"></span>`:''}</div><div class="pace-labels" aria-hidden="true"><span>dia 1</span><span>dia ${span}</span></div></div>`;
+  return `<div class="pace"><div class="pace-axis" aria-hidden="true"><span>${axisLabel(max)}</span><span>${axisLabel(max/2)}</span><span>R$ 0</span></div><div class="pace-plot"><div class="pace-grid" aria-hidden="true"><i></i><i></i><i></i></div><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">${before.length>1?`<path class="pace-before" d="${smoothPath(before)}" vector-effect="non-scaling-stroke"/>`:''}${now.length>1?`<path class="pace-fill" d="${smoothPath(now)}L${end[0].toFixed(2)} 100L0 100Z"/><path class="pace-now" d="${smoothPath(now)}" vector-effect="non-scaling-stroke"/>`:''}</svg>${end?`<span class="pace-dot" style="left:${end[0].toFixed(2)}%;top:${end[1].toFixed(2)}%" aria-hidden="true"></span>`:''}</div><div class="pace-labels" aria-hidden="true"><span>dia 1</span><span>dia ${span}</span></div></div>`;
 }
 
 // Fluxo do mês numa barra só, como o "Armazenamento" do iPhone: cada categoria ocupa a sua fatia do que entrou

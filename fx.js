@@ -107,6 +107,15 @@ const hideTip=()=>tip?.removeAttribute('data-show');
 document.addEventListener('pointerover',event=>{const target=event.target.closest?.('[data-tip]');if(target&&event.pointerType!=='touch')showTip(target);});
 document.addEventListener('pointerout',event=>{if(event.target.closest?.('[data-tip]'))hideTip();});
 document.addEventListener('focusin',event=>{const target=event.target.closest?.('[data-tip]');if(target)showTip(target);});
+document.addEventListener('click',event=>{
+  const area=event.target.closest?.('.area');
+  const targets=area?[...area.querySelectorAll('[data-tip]')]:[];
+  const target=targets.length?targets.reduce((best,node)=>{
+    const distance=el=>Math.abs(el.getBoundingClientRect().left+el.getBoundingClientRect().width/2-event.clientX);
+    return distance(node)<distance(best)?node:best;
+  }):event.target.closest?.('[data-tip]');
+  if(target)showTip(target);else hideTip();
+});
 document.addEventListener('focusout',hideTip);
 window.addEventListener('scroll',hideTip,{passive:true});
 if(main)new MutationObserver(hideTip).observe(main,{childList:true});

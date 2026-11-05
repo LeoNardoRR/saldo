@@ -8,6 +8,15 @@ const sectionHead=(title,description='',cta='')=>`<div class="section-heading"><
 const percentShare=(value,total)=>{const n=value/total*100;return n>0&&n<1?'<1':n>99&&n<100?'>99':Math.round(n);};
 const progress=(realized,planned=0,legacy=0)=>`<div class="bar-track" aria-hidden="true"><span class="bar-fill realized" style="width:${Math.max(0,Math.min(100,realized))}%"></span><span class="bar-fill planned" style="width:${Math.max(0,Math.min(100-realized,planned))}%"></span><span class="bar-fill legacy" style="width:${Math.max(0,Math.min(100-realized-planned,legacy))}%"></span></div>`;
 
+function walletDeck(ctx) {
+  const cards=ctx.state.accounts.map((a,i)=>{
+    const credit=a.type==='credit',bill=credit?invoice(ctx.state.entries,a,ctx.month):null;
+    const value=credit?Math.max(0,bill.remaining):accountBalance(ctx.state.entries,a,today());
+    return `<li class="wallet-item"><button type="button" class="wallet-card wallet-tone-${i%3}" data-action="${credit?'invoice':'filter-account'}" data-id="${esc(credit?a.id:a.name)}" aria-label="${esc(a.name)}: ${credit?'ver fatura':'ver registros'}"><span class="wallet-card-top"><span class="wallet-card-name">${esc(a.name)}</span>${icon(credit?'card':a.type==='cash'?'wallet':'bank')}</span><span class="wallet-chip" aria-hidden="true">${icon('chip')}</span><span class="wallet-card-label">${credit?'Fatura em aberto':'Saldo da conta'}</span><strong class="wallet-card-value">${ctx.cash(value)}</strong><span class="wallet-card-bottom"><span>${credit?`Vence ${dateLabel(bill.dueDate)}`:a.type==='cash'?'Carteira pessoal':'Conta bancária'}</span><span>${credit?'Ver fatura':'Ver registros'} ${icon('arrow-right')}</span></span></button></li>`;
+  }).join('');
+  return `<section class="wallet-section" aria-label="Sua carteira">${sectionHead('Minha carteira','',action('new-account','Adicionar',{cls:'text-button',iconName:'plus'}))}<ul class="wallet-rail" aria-label="Contas e cartões; deslize para ver mais" tabindex="0">${cards}</ul>${ctx.state.accounts.length>1?'<p class="wallet-hint">Deslize para ver suas contas e cartões</p>':''}</section>`;
+}
+
 export function overview(ctx) {
   const state=ctx.state,month=ctx.month,hidden=ctx.preferences.hidden,pending=pendingTotals(state,month),cash=compareCash(state,month),balance=available(state),legacy=state.entries.filter(e=>e.status==='legacy').length;
   const accounts=state.accounts.filter(a=>a.type!=='credit'),setup=!state.entries.length&&!ctx.preferences.setupDismissed;
@@ -36,7 +45,7 @@ export function overview(ctx) {
   const rangeWords=points.length>1?`${range==='month'?`desde o fim de ${shortMonth(cash.previous)}`:range==='6m'?'em 6 meses':'em 12 meses'}${current?'':` até ${dateLabel(points.at(-1).date)}`}`:'';
   const changeTag=points.length>1?`<span class="hero-change ${change<0?'down':'up'}">${change<0?'↓':'↑'} ${ctx.cash(Math.abs(change))}${base>0&&change?` · ${Math.round(Math.abs(change)/base*100)}%`:''}</span><span>${esc(rangeWords)}</span>`:`<span>Hoje, ${dateLabel(today())}</span>`;
   const toggle=cash.future?'':`<div class="seg" role="group" aria-label="Período do gráfico">${[['month','Mês'],['6m','6M'],['12m','12M']].map(([k,l])=>`<button type="button" data-action="hero-range" data-id="${k}" aria-pressed="${k===range}">${l}</button>`).join('')}</div>`;
-  const chips=accounts.slice(0,3).map(a=>`<button type="button" class="chip" data-action="filter-account" data-id="${esc(a.id)}"><span>${esc(a.name)}</span><strong>${ctx.cash(accountBalance(state.entries,a,today()))}</strong></button>`).join('')+(accounts.length>3?`<a class="chip chip-more" href="#accounts">+${accounts.length-3}</a>`:'');
+  const chips=accounts.slice(0,3).map(a=>`<button type="button" class="chip" data-action="filter-account" data-id="${esc(a.name)}"><span>${esc(a.name)}</span><strong>${ctx.cash(accountBalance(state.entries,a,today()))}</strong></button>`).join('')+(accounts.length>3?`<a class="chip chip-more" href="#accounts">+${accounts.length-3}</a>`:'');
   const area=points.length>1?areaChart(points,{label:dateLabel}):'';
   const hero=`<section class="hero" aria-label="Saldo disponível"><div class="hero-top"><span class="hero-label">${icon('wallet')}Saldo disponível</span>${toggle}</div><strong class="hero-amount">${ctx.cash(balance)}</strong><div class="hero-meta">${changeTag}</div>${area?`<div class="hero-chart">${area}<div class="hero-axis" aria-hidden="true"><span>${dayMonth(points[0].date)}</span><span>${dayMonth(points.at(-1).date)}</span></div></div>`:''}${chips?`<div class="hero-accounts">${chips}<a class="hero-link" href="#accounts">Contas ${icon('arrow-right')}</a></div>`:''}</section>`;
 
@@ -70,6 +79,7 @@ export function overview(ctx) {
   // Fluxo do mês: de onde veio → para onde foi.
   const flow=moneyFlow(state,month,4),flowSvg=hidden?'':flowChart(flow,{cash:v=>ctx.cash(v)});
   const flowLine=flow.income||flow.expense?`<div class="flow-total"><div><strong>${ctx.cash(flow.expense)}</strong><span>gastos de ${ctx.cash(flow.income)} que entraram</span></div><div class="${flow.deficit?'neg':'pos'}"><span>${flow.deficit?'Faltou':'Sobrou'}</span><strong>${ctx.cash(flow.deficit||flow.surplus)}</strong></div></div>`:'';
+  const flowCards=`<div class="flow-cards" aria-label="Movimentação registrada no mês"><article class="flow-card flow-credit"><span class="flow-card-icon">${icon('arrow-down')}</span><div><span>Receitas do mês</span><small>Inclui valores previstos</small></div><strong>${ctx.cash(flow.income)}</strong></article><article class="flow-card flow-debit"><span class="flow-card-icon">${icon('arrow-up')}</span><div><span>Despesas do mês</span><small>Inclui valores previstos</small></div><strong>${ctx.cash(flow.expense)}</strong></article></div>`;
   const flowPanel=`<article class="panel panel-flow">${sectionHead('Para onde foi o dinheiro',`${monthName(month)} · inclui previstos`)}${flowSvg?flowLine:''}${flowSvg||(hidden?flowLine:empty('Sem movimentações no mês','Receitas e despesas vão aparecer aqui.','', 'leaf'))}</article>`;
 
   const attentionItems=pending.items.slice(0,5);
@@ -77,12 +87,12 @@ export function overview(ctx) {
 
   const recent=[...state.entries].filter(e=>e.date.startsWith(month)).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
   const latest=`<article class="panel panel-latest">${sectionHead('Últimos registros','','<a href="#transactions" class="text-button">Ver todos</a>')}${recent.length?`<div class="txn-list">${recent.map(e=>`<div class="txn-row"><span class="txn-avatar ${e.type}" aria-hidden="true">${categoryIcon(e.category)}</span><div class="txn-main">${action('edit-entry',e.description,{id:e.id,cls:'text-button txn-title'})}<p>${dateLabel(e.date)} · ${esc(e.category)} · ${esc(statusLabel(state,e))}</p></div><span class="txn-amount ${e.type==='income'?'positive':''}">${e.type==='income'?'+ ':e.type==='expense'?'− ':''}${ctx.cash(e.cents)}</span></div>`).join('')}</div>`:empty('Ainda sem registros no período','Você pode registrar agora ou consultar outro mês.',action('new-entry','Nova movimentação',{cls:'button primary'}))}</article>`;
-  const balanceDetail=area?`<article class="panel panel-balance">${sectionHead('Evolução do saldo','',toggle.replaceAll('hero-range','balance-range'))}<strong class="balance-detail-value">${ctx.cash(balance)}</strong><div class="hero-chart">${areaChart(points,{label:dateLabel}).replace('id="area-fill"','id="balance-fill"').replace('class="area-fill"','class="area-fill" style="fill:url(#balance-fill)"')}<div class="hero-axis" aria-hidden="true"><span>${dayMonth(points[0].date)}</span><span>${dayMonth(points.at(-1).date)}</span></div></div></article>`:'';
+  const balanceDetail=area?`<article class="panel panel-balance">${sectionHead('Evolução do saldo','',toggle.replaceAll('hero-range','balance-range'))}<strong class="balance-detail-value">${ctx.cash(points.at(-1).value)}</strong><div class="hero-chart">${areaChart(points,{label:dateLabel,id:'balance-fill'})}<div class="hero-axis" aria-hidden="true"><span>${dayMonth(points[0].date)}</span><span>${dayMonth(points.at(-1).date)}</span></div></div></article>`:'';
   const section=['summary','analysis','activity'].includes(ctx.overviewSection)?ctx.overviewSection:'summary';
   const sections=[['summary','Resumo','wallet'],['analysis','Análises','chart'],['activity','Atividade','list']];
   const navigation=`<nav class="overview-switch" aria-label="Seções da visão geral">${sections.map(([id,label,symbol])=>`<button type="button" data-action="overview-section" data-id="${id}" aria-pressed="${section===id}" aria-controls="overview-${id}">${icon(symbol)}<span>${label}</span></button>`).join('')}</nav>`;
   const pane=(id,content)=>`<div id="overview-${id}" class="overview-pane" data-active="${section===id}">${content}</div>`;
-  return `${onboarding}${navigation}<div class="dash">${pane('summary',`${warning}${quality}${hero}<div class="dash-side">${safeCard}${kpis}</div>${quick}`)}${pane('analysis',`${balanceDetail}${pacePanel}${categories}${flowPanel}`)}${pane('activity',`${attention}${latest}`)}</div>`;
+  return `${onboarding}${navigation}<div class="dash">${pane('summary',`${warning}${quality}${hero}<div class="dash-side">${safeCard}${kpis}</div>${walletDeck(ctx)}${quick}`)}${pane('analysis',`${balanceDetail}${flowCards}${pacePanel}${categories}${flowPanel}`)}${pane('activity',`${attention}${latest}`)}</div>`;
 }
 
 function rowMenu(state,e) {

@@ -6,6 +6,8 @@ const brlNumber = cents => (cents/100).toLocaleString('pt-BR',{minimumFractionDi
 export function formatMoneyField(el){const raw=el.value.trim();if(!raw)return;const negative=raw.startsWith('-'),cents=parseMoney(negative?raw.slice(1).trim():raw,true);if(cents!==null)el.value=(negative?'-':'')+brlNumber(cents);}
 export const esc = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const paths={
+  chip:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M9 5v14M15 5v14M3 10h6M3 14h6M15 10h6M15 14h6M9 12h6"/>',
+
   home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/>',
   chart:'<path d="M4 4v16h16M8 15v-4M13 15V7M18 15V4"/>',
   receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3ZM9 7h6M9 11h6M9 15h3"/>',
