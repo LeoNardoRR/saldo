@@ -1,4 +1,4 @@
-import {accountBalance,invoice,invoiceMonth,normalized,shiftMonth,summary} from './finance.js';
+import {accountBalance,invoice,invoiceMonth,normalized,shiftMonth} from './finance.js';
 
 export const today = () => {
   const d = new Date();
@@ -11,14 +11,6 @@ export const monthLabel = month => new Date(`${month}-02T12:00:00`).toLocaleDate
 export const plural = (n, one, many = `${one}s`) => `${n} ${n===1?one:many}`;
 export const daysIn = month => new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate();
 export const inMonth = (date, month) => Boolean(date?.startsWith(month));
-// Monthly income minus expenses, including plans. Opening balances and transfers
-// are not earnings or spending; card purchases count once, without the bill payment.
-export function monthPlan(state, month) {
-  const rows=state.entries.filter(e=>inMonth(e.date,month)&&e.type!=='transfer');
-  const known=rows.filter(e=>e.status==='planned'||e.status==='settled');
-  const totals=summary(known,month,{planned:true});
-  return {income:totals.income,expense:totals.expense,balance:totals.balance,count:known.length,unconfirmed:rows.filter(e=>e.status==='legacy').length};
-}
 export const accountFor = (state, name) => state.accounts.find(a => a.name === name);
 export const isCardPayment = (state, e) => e.type === 'transfer' && accountFor(state, e.toAccount)?.type === 'credit';
 export const isCardPurchase = (state, e) => e.type === 'expense' && accountFor(state, e.account)?.type === 'credit';
@@ -159,4 +151,66 @@ export function csvText(state,rows) {
   const headers=['Referência','Vencimento','Data efetiva','Descrição','Categoria','Conta origem','Conta destino','Tipo','Status','Valor','Fatura','Observação'];
   const data=rows.map(e=>[e.date,e.dueDate,e.settledDate,e.description,e.category,e.account,e.toAccount,{income:'Receita',expense:'Despesa',transfer:'Transferência'}[e.type],statusLabel(state,e),(e.type==='expense'?'-':'')+amount(e.cents),e.invoiceMonth||'',e.notes||'']);
   return '\ufeff'+[headers,...data].map((r,index)=>r.map((value,column)=>cell(value,index>0&&column===9)).join(';')).join('\r\n');
+}
+
+// ---- Visão geral 5.1: séries e indicadores derivados (centavos; datas ISO; `asOf` testável) ----
+const isoDate = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const cutFor = (month, asOf) => month===asOf.slice(0,7) ? Number(asOf.slice(-2)) : month>asOf.slice(0,7) ? 0 : daysIn(month);
+
+// Gasto acumulado por dia, pela data de referência (consumo: inclui cartão e previstos, exclui transferências).
+function expenseByDay(state, month, limit) {
+  const values=Array(daysIn(month)).fill(0);
+  for(const e of state.entries) if(e.type==='expense'&&inMonth(e.date,month)) values[Number(e.date.slice(-2))-1]+=e.cents;
+  let sum=0;return values.slice(0,limit).map(v=>sum+=v);
+}
+export function spendingPace(state, month, asOf=today()) {
+  const previousMonth=shiftMonth(`${month}-01`,-1).slice(0,7),cut=cutFor(month,asOf);
+  const current=expenseByDay(state,month,cut),previous=expenseByDay(state,previousMonth,daysIn(previousMonth));
+  const spent=current.at(-1)||0,before=cut?previous[Math.min(cut,previous.length)-1]||0:0;
+  return {month,previousMonth,days:daysIn(month),cut,current,previous,spent,before,previousTotal:previous.at(-1)||0,
+    difference:spent-before,percent:before>0?Math.round((spent-before)/before*100):null};
+}
+
+// Recebido e pago acumulados por dia, pela data efetiva (mesma regra do caixa).
+export function cashSeries(state, month, asOf=today()) {
+  const cut=cutFor(month,asOf),income=Array(cut).fill(0),expense=Array(cut).fill(0);
+  for(const e of state.entries) {
+    const d=e.settledDate||e.date,index=Number(d?.slice(-2))-1;
+    if(!inMonth(d,month)||index>=cut||e.status!=='settled'||d>asOf) continue;
+    const effect=cashEffect(state,e);if(effect>0)income[index]+=effect;if(effect<0)expense[index]-=effect;
+  }
+  let a=0,b=0;return {income:income.map(v=>a+=v),expense:expense.map(v=>b+=v)};
+}
+
+// Livre para gastar até o fim do mês corrente: disponível hoje menos tudo que está a pagar (inclui atrasos e faturas).
+// Recebimentos previstos ficam fora: ainda não são dinheiro disponível.
+export function safeToSpend(state, month, asOf=today()) {
+  if(month!==asOf.slice(0,7)) return null;
+  const balance=available(state,asOf),pending=pendingTotals(state,month),free=balance-pending.pay;
+  const daysLeft=daysIn(month)-Number(asOf.slice(-2))+1;
+  return {balance,pay:pending.pay,receive:pending.receive,free,daysLeft,perDay:free>0?Math.floor(free/daysLeft):0};
+}
+
+// Saldo disponível ao longo do tempo. 'month' = dia a dia no mês; '6m'/'12m' = pontos semanais até o corte.
+export function balanceSeries(state, month, range='month', asOf=today()) {
+  const cut=cutFor(month,asOf);if(!cut) return [];
+  const end=`${month}-${String(cut).padStart(2,'0')}`,dates=[];
+  if(range==='month') {
+    dates.push(isoDate(new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-1,0)));
+    for(let d=1;d<=cut;d++) dates.push(`${month}-${String(d).padStart(2,'0')}`);
+  } else {
+    const months=range==='12m'?12:6,[y,m,d]=end.split('-').map(Number),stop=new Date(y,m-1,d),start=new Date(y,m-1-months,d);
+    for(let t=new Date(start);t<stop;t.setDate(t.getDate()+7)) dates.push(isoDate(t));
+    dates.push(end);
+  }
+  return dates.map(date=>({date,value:available(state,date)}));
+}
+
+// Fluxo do mês pela data de referência: receitas por categoria → despesas por categoria (+ sobra ou falta).
+export function moneyFlow(state, month, limit=5) {
+  const group=type=>{const map=new Map();for(const e of state.entries){if(e.type!==type||!inMonth(e.date,month))continue;const k=normalized(e.category),v=map.get(k)||{name:e.category,total:0};v.total+=e.cents;map.set(k,v);}return [...map.values()].sort((a,b)=>b.total-a.total);};
+  const fold=list=>list.length>limit?[...list.slice(0,limit),{name:'Outras',total:list.slice(limit).reduce((n,c)=>n+c.total,0),other:true}]:list;
+  const sources=fold(group('income')),targets=fold(group('expense'));
+  const income=sources.reduce((n,c)=>n+c.total,0),expense=targets.reduce((n,c)=>n+c.total,0);
+  return {sources,targets,income,expense,surplus:Math.max(0,income-expense),deficit:Math.max(0,expense-income)};
 }

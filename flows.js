@@ -47,7 +47,7 @@ export function entryForm(ctx,entry=null,{duplicate=false,recurring=false,type='
     api.dialog.querySelectorAll('[data-action=entry-type]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===t)));
     const quick=$('[data-action=quick-category]',f);quick.hidden=t==='transfer';
   };
-  api=modal({title,body,submit:expected?'Salvar alterações':'Salvar registro',draftKey:draftKey(ctx,'entry',expected?.id||'new'),onAction:(name,b)=>{
+  api=modal({title,body,submit:expected?'Salvar alterações':'Salvar movimentação',draftKey:draftKey(ctx,'entry',expected?.id||'new'),onAction:(name,b)=>{
     if(name==='entry-type'){get(api.form,'type').value=b.dataset.id;updateFields();api.setDirty();}
     if(name==='quick-category')categoryForm(ctx,null,c=>{get(api.form,'category').innerHTML=options(ctx.state.categories.filter(x=>x.type===get(api.form,'type').value||x.type==='both').map(c=>c.name),c.name,'Escolha uma categoria');api.setDirty();});
     if(name==='quick-account')accountForm(ctx,null,a=>{get(api.form,'account').innerHTML=options(ctx.state.accounts.map(x=>x.name),a.name);updateFields();api.setDirty();});

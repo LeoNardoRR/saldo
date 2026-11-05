@@ -5,7 +5,7 @@ const main=document.getElementById('main-content');
 
 /* ---- tema claro/escuro ---- */
 const THEME_KEY='saldo.theme.v1';
-const themeColors={dark:'#0b100f',light:'#f4f2ed'};
+const themeColors={dark:'#000000',light:'#f2f2f7'};
 function applyTheme(theme){
   root.dataset.theme=theme;
   document.querySelector('meta[name=theme-color]')?.setAttribute('content',themeColors[theme]);
@@ -114,3 +114,11 @@ if(main)new MutationObserver(hideTip).observe(main,{childList:true});
 mountThemeToggle();
 applyTheme(currentTheme());
 enter();
+
+/* ---- barra de período em vidro ao rolar (estilo iOS) ---- */
+const title=document.getElementById('page-title');
+if(title&&'IntersectionObserver' in window){
+  new IntersectionObserver(([entry])=>{
+    if(entry.isIntersecting)delete root.dataset.scrolled;else root.dataset.scrolled='';
+  },{rootMargin:'-8px 0px 0px 0px'}).observe(title);
+}

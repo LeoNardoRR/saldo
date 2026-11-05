@@ -1,0 +1,447 @@
+/* Saldo · camada iOS
+   Carrega depois de theme.css e redefine tokens e acabamento no estilo iOS / iPadOS:
+   fonte do sistema (SF), fundo agrupado cinza, cartões brancos sem borda, materiais translúcidos
+   com desfoque, título grande, barra de abas flutuante, controles segmentados e listas com separador recuado.
+   A cor de destaque continua sendo o verde do Saldo. */
+
+/* ============ 1. TOKENS ============ */
+:root,
+:root[data-theme=light]{
+  --font-text:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif;
+  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif;
+  /* superfícies (systemGroupedBackground) */
+  --canvas:#f2f2f7; --surface:#ffffff; --surface-2:#f7f7fa; --surface-soft:#7676801f; --surface-raised:#ffffff;
+  --line:#3c3c431f; --line-strong:#c6c6c8; --input-line:#3c3c4333;
+  --fill:#7676801f; --fill-2:#74748014;
+  /* texto (label / secondaryLabel) */
+  --ink:#000000; --secondary:#3c3c43; --muted:#6c6c70;
+  /* destaque: verde Saldo */
+  --brand:#0e7a5a; --brand-hover:#0b6a4e; --brand-on:#ffffff; --brand-tint:#0e7a5a1a; --ring:#0e7a5a40;
+  --sage:#1f9d74; --unconfirmed:#a2790f;
+  /* dados */
+  --income:#1f9d74; --expense:#ff6a2b;
+  --c1:#0e7a5a; --c2:#32ade6; --c3:#ff9f0a; --c4:#ff375f; --c5:#af52de; --c6:#8e8e93; --c7:#5856d6;
+  --in1:#1f9d74; --in2:#5ac8a0; --in3:#a6e3cb;
+  /* semântica (cores de sistema acessíveis) */
+  --success:#1d7c35; --success-bg:#34c75924; --danger:#d70015; --danger-bg:#ff3b3020;
+  --warning:#a05a00; --warning-bg:#ff950024; --info:#0066cc; --info-bg:#007aff1c;
+  /* cartão principal */
+  --hero-bg:var(--surface);
+  --hero-ink:var(--ink); --hero-soft:var(--muted); --hero-line:var(--line); --hero-accent:#1f9d74;
+  /* materiais */
+  --material:#f9f9fbd1; --material-thick:#fbfbfde6; --material-line:#0000001a;
+  --glass:#ffffffb3; --glass-line:#ffffffcc;
+  /* elevação */
+  --elev-1:none;
+  --elev-2:0 8px 24px -12px #0000002e;
+  --shadow-overlay:0 24px 64px -16px #00000047,0 0 0 .5px #0000001a;
+  /* raios */
+  --r-sm:8px; --r-md:10px; --r-lg:14px; --r-xl:22px;
+  --ease:cubic-bezier(.32,.72,0,1);
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c6c70' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+}
+:root[data-theme=dark]{
+  --canvas:#000000; --surface:#1c1c1e; --surface-2:#2c2c2e; --surface-soft:#7676803d; --surface-raised:#2c2c2e;
+  --line:#54545899; --line-strong:#38383a; --input-line:#ebebf54d;
+  --fill:#7676803d; --fill-2:#7676802e;
+  --ink:#ffffff; --secondary:#ebebf5c4; --muted:#98989f;
+  --brand:#3ddc97; --brand-hover:#5fe6ab; --brand-on:#00140c; --brand-tint:#3ddc9726; --ring:#3ddc9759;
+  --sage:#30d158; --unconfirmed:#ffd60a;
+  --income:#30d158; --expense:#ff9f0a;
+  --c1:#3ddc97; --c2:#64d2ff; --c3:#ffd60a; --c4:#ff6482; --c5:#da8fff; --c6:#98989f; --c7:#7d7aff;
+  --in1:#30d158; --in2:#24a046; --in3:#1a6e33;
+  --success:#30d158; --success-bg:#30d15826; --danger:#ff6961; --danger-bg:#ff453a26;
+  --warning:#ffb340; --warning-bg:#ff9f0a26; --info:#64d2ff; --info-bg:#0a84ff26;
+  --hero-bg:var(--surface);
+  --hero-ink:var(--ink); --hero-soft:var(--muted); --hero-line:var(--line); --hero-accent:#30d158;
+  --material:#1c1c1ed1; --material-thick:#1c1c1eeb; --material-line:#ffffff1f;
+  --glass:#2c2c2eb8; --glass-line:#ffffff1f;
+  --elev-1:none;
+  --elev-2:0 10px 28px -12px #000000b3;
+  --shadow-overlay:0 28px 72px -16px #000000d9,0 0 0 .5px #ffffff1f;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398989f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+}
+
+/* ============ 2. BASE ============ */
+body{font-family:var(--font-text);font-size:15px;letter-spacing:-.15px;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+h1,h2,h3,h4{font-family:var(--font-display)}
+h1{font-weight:600;letter-spacing:.1px}
+h2,h3{font-weight:600;letter-spacing:-.2px}
+:focus-visible{outline:3px solid var(--ring);outline-offset:2px;border-radius:10px}
+a{color:var(--brand)}
+.eyebrow,.header-kicker{font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
+.helper,.section-heading p{color:var(--muted)}
+
+/* ============ 3. BOTÕES (cápsula, preenchimento tonal) ============ */
+.button{border-radius:999px;border:0;font-weight:600;letter-spacing:-.2px;box-shadow:none}
+.button.primary{background:var(--brand);color:var(--brand-on);box-shadow:none}
+.button.primary:hover{background:var(--brand-hover);box-shadow:none}
+.button.secondary{background:var(--fill);color:var(--brand);border:0;box-shadow:none}
+.button.secondary:hover{background:var(--surface-soft);filter:brightness(.97)}
+.button.danger{background:var(--danger-bg);color:var(--danger);border:0}
+.button.danger:hover{background:var(--danger-bg);filter:brightness(.96)}
+.button:active,.icon-button:active,.quick:active,.sheet-action:active,.kpi:active,.chip:active{transform:scale(.96);opacity:.85}
+.icon-button{border-radius:999px;color:var(--brand)}
+.icon-button:hover{background:var(--fill);color:var(--brand)}
+.text-button{color:var(--brand);font-weight:600}
+.text-button:hover{background:var(--fill)}
+
+/* ============ 4. BARRA LATERAL (estilo iPadOS) ============ */
+.sidebar{background:var(--material);-webkit-backdrop-filter:saturate(180%) blur(30px);backdrop-filter:saturate(180%) blur(30px);border-right:.5px solid var(--material-line);padding:22px 14px 14px}
+.brand span{font-family:var(--font-display);font-size:24px;font-weight:600;letter-spacing:-.4px}
+.brand::before{background:var(--brand);border-radius:0}
+.new-entry{min-height:44px;border-radius:12px;margin-bottom:18px;justify-content:center}
+.new-entry kbd{font-family:var(--font-text);background:#ffffff33}
+.nav-group{padding:18px 10px 6px;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
+#main-nav{gap:1px}
+#main-nav a,.settings-link{min-height:40px;padding:0 10px;border-radius:10px;font-size:15px;font-weight:500;color:var(--ink);gap:10px}
+#main-nav a .icon,.settings-link .icon{width:21px;height:21px;color:var(--brand)}
+#main-nav a:hover,.settings-link:hover{background:var(--fill-2);color:var(--ink)}
+#main-nav a[aria-current=page],.settings-link[aria-current=page]{background:var(--brand);color:var(--brand-on);font-weight:600}
+#main-nav a[aria-current=page] .icon,.settings-link[aria-current=page] .icon{color:var(--brand-on)}
+#main-nav a[aria-current=page]::before,.settings-link[aria-current=page]::before{content:none}
+#main-nav a:hover .icon,.settings-link:hover .icon{transform:none}
+.sidebar-bottom{border-top:.5px solid var(--line)}
+.profile-button{border:0;border-radius:12px;background:var(--surface);box-shadow:none}
+.profile-button:hover{background:var(--surface);filter:brightness(.98)}
+.avatar{border:0;background:linear-gradient(160deg,#8e8e93,#636366);color:#fff;font-weight:600}
+:root[data-theme=dark] .avatar{background:linear-gradient(160deg,#636366,#48484a)}
+
+/* ============ 5. CABEÇALHO: TÍTULO GRANDE + BARRA DE PERÍODO ============ */
+.app-header{padding:30px 0 2px;align-items:flex-end}
+.app-header h1{font-size:34px;line-height:1.12;letter-spacing:.3px}
+.header-kicker{display:none}
+.header-subtitle{margin-top:2px;font-size:15px;color:var(--muted)}
+.header-actions .icon-button{width:36px;min-width:36px;height:36px;min-height:36px;background:var(--fill)}
+.header-actions .avatar{width:36px;height:36px}
+.context-bar{margin:14px 0 20px}
+.period-control{padding:2px;border:0;border-radius:10px;background:var(--fill);box-shadow:none}
+.period-control .icon-button{width:34px;min-width:34px;min-height:32px;border-radius:8px;background:none}
+.period-control .icon-button:hover{background:var(--surface)}
+.month-label input{min-height:32px;border:0;border-radius:8px;background:var(--surface);box-shadow:0 1px 3px #0000001f,0 0 0 .5px #0000000a;font-weight:600}
+:root[data-theme=dark] .month-label input{background:#636366;box-shadow:none}
+.month-label input:hover{background:var(--surface)}
+.sync-control{font-size:13px}
+.status-dot{background:var(--sage)}
+.app-footer{font-size:12px}
+/* ao rolar, a barra de período vira um vidro flutuante (fx.js marca :root[data-scrolled]) */
+.context-bar{position:sticky;top:calc(8px + env(safe-area-inset-top));z-index:20;margin-left:-10px;margin-right:-10px;padding:6px 10px;border-radius:18px;transition:background var(--dur-2),box-shadow var(--dur-2)}
+:root[data-scrolled] .context-bar{background:var(--material-thick);-webkit-backdrop-filter:saturate(200%) blur(28px);backdrop-filter:saturate(200%) blur(28px);box-shadow:0 8px 28px -12px #00000038,0 0 0 .5px var(--material-line)}
+:root[data-scrolled] .context-bar .month-label input{box-shadow:0 1px 3px #0000001f}
+
+/* ============ 6. SUPERFÍCIES (cartões agrupados sem borda) ============ */
+.panel,.account-card,.onboarding,.table-container,.setup-step,.kpi,.safe,.quick,.account-summary>div,.filters-row{border:0;box-shadow:none}
+.panel,.account-card,.onboarding,.safe,.kpi,.account-summary>div,.filters-row,.table-container,.quick{background:var(--surface)}
+.panel{border-radius:var(--r-xl);padding:20px 20px}
+.section-heading{margin-bottom:14px}
+.section-heading h2,.panel .section-heading h2{font-size:20px;letter-spacing:-.4px}
+.section-heading p{font-size:13px}
+.section-note{font-size:12px}
+.setup-step{background:var(--surface-2)}
+.setup-step>span{background:var(--brand);color:var(--brand-on)}
+
+/* ============ 7. VISÃO GERAL ============ */
+.hero{background:var(--surface);color:var(--ink);box-shadow:none}
+.hero-label{gap:8px;font-weight:500;font-size:15px;color:var(--muted)}
+.hero-label .icon{width:18px;height:18px;color:var(--muted)}
+.hero-amount{margin-top:8px;font-family:var(--font-display);font-weight:500;font-size:clamp(36px,3.6vw,46px);letter-spacing:-.6px;line-height:1.1}
+.hero-meta{color:var(--muted)}
+.hero-change{padding:2px 8px;font-weight:600;background:var(--success-bg);color:var(--success)}
+.hero-change.down{background:var(--danger-bg);color:var(--danger)}
+.seg{background:var(--fill);padding:2px;border-radius:99px}
+.seg button{border-radius:99px;min-height:26px;padding:0 12px;font-weight:500;color:var(--ink)}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 2px 6px #0000001f,0 0 0 .5px #0000000a}
+:root[data-theme=dark] .seg button[aria-pressed=true]{background:#636366}
+.chip{min-height:32px;background:var(--fill-2);border:0;color:var(--ink);font-size:13px}
+.chip span{color:var(--muted)}
+.chip strong{font-weight:500}
+.chip:hover{background:var(--fill)}
+.hero-link{color:var(--brand);font-weight:500}
+.hero-link:hover{color:var(--brand);background:var(--brand-tint)}
+.area-line{stroke-width:2}
+.area-end{width:9px;height:9px;margin:-4.5px -4.5px 0 0;box-shadow:0 0 0 4px var(--surface),0 0 0 5px var(--line)}
+.area-zone::before{background:var(--line-strong)}
+.hero-axis{color:var(--muted)}
+.kpi{border-radius:var(--r-xl);padding:16px}
+.kpi:hover{transform:none;box-shadow:none;filter:brightness(.985)}
+.kpi-icon{border-radius:50%;width:30px;height:30px;flex-basis:30px}
+.kpi-in .kpi-icon{background:var(--success);color:#fff}
+.kpi-out .kpi-icon{background:var(--expense);color:#fff}
+.kpi-late .kpi-icon{background:var(--danger);color:#fff}
+.kpi .kpi-icon{background:var(--c2);color:#fff}
+.kpi-in .kpi-icon{background:var(--sage)}
+.kpi-label{font-size:13px;font-weight:600;color:var(--muted)}
+.kpi-value{font-family:var(--font-display);font-weight:500;letter-spacing:-.3px}
+.delta{font-weight:600;background:var(--fill)}
+.safe{border-radius:var(--r-xl)}
+.safe-head .icon{color:var(--brand)}
+.safe-value{font-family:var(--font-display);font-weight:500;letter-spacing:-.4px}
+.quick{border-radius:var(--r-lg);font-weight:600;color:var(--ink)}
+.quick:hover{transform:none;box-shadow:none;filter:brightness(.98)}
+.quick .icon{width:30px;height:30px;padding:6px;box-sizing:border-box;border-radius:50%;background:var(--brand-tint);color:var(--brand)}
+.quick:hover .icon{transform:none}
+.cat-avatar{border-radius:50%;font-family:var(--font-display);color:#fff;background:var(--tone)}
+.cat-row:hover{background:var(--fill-2)}
+.cat-bar,.kpi-meter,.bar-track{background:var(--fill)}
+.cats-foot{border-top:.5px solid var(--line)}
+.pace-grid i,.evo-grid i{background:var(--line)}
+
+/* listas com separador recuado (como UITableView) */
+.txn-row{position:relative;border-bottom:0;padding:11px 0}
+.txn-row:not(:last-child)::after{content:'';position:absolute;left:54px;right:0;bottom:0;height:.5px;background:var(--line-strong)}
+:root[data-theme=dark] .txn-row:not(:last-child)::after{background:var(--line)}
+.txn-avatar{font-family:var(--font-display);font-weight:600;background:var(--c6);color:#fff}
+.txn-avatar.income{background:var(--sage);color:#fff}
+.txn-avatar.transfer{background:var(--c2);color:#fff}
+.txn-title{font-weight:600}
+.attention-row,.budget-row,.goal-row,.recurring-row,.settings-row{border-bottom:.5px solid var(--line-strong)}
+:root[data-theme=dark] :is(.attention-row,.budget-row,.goal-row,.recurring-row,.settings-row){border-bottom-color:var(--line)}
+.attention-icon{border-radius:50%}
+.empty-state .icon{background:var(--fill);color:var(--muted)}
+
+/* ============ 8. CONTAS ============ */
+.account-summary>div{border-radius:var(--r-xl)}
+.account-summary strong{font-family:var(--font-display);font-weight:500;letter-spacing:-.4px}
+.account-card{border-radius:var(--r-xl)}
+.account-card:hover{transform:none;box-shadow:none;filter:brightness(.99)}
+.account-card-top>span{border-radius:50%;background:var(--brand);color:var(--brand-on)}
+.account-credit{background:linear-gradient(150deg,#2c2c2e,#000);color:#fff}
+:root[data-theme=dark] .account-credit{background:linear-gradient(150deg,#3a3a3c,#1c1c1e)}
+.account-credit .account-card-top>span{background:#ffffff26;color:#fff}
+.account-credit small,.account-credit .helper,.account-credit .eyebrow{color:#ffffffa6}
+.account-credit .text-button,.account-credit .icon-button{color:#fff}
+.account-credit .button.secondary{background:#ffffff26;color:#fff;border:0}
+
+/* ============ 9. CONTROLES: SEGMENTOS, CAMPOS, SELOS ============ */
+.segment{display:inline-flex;padding:2px;border:0;border-radius:9px;background:var(--fill);box-shadow:none}
+.segment button{min-height:30px;border-radius:7px;font-size:13px;font-weight:500;color:var(--ink);background:none}
+.segment button:hover{color:var(--ink)}
+.segment button[aria-pressed=true]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 3px 8px #0000001f,0 0 0 .5px #0000000a}
+:root[data-theme=dark] .segment button[aria-pressed=true]{background:#636366;box-shadow:none}
+.form-kind{gap:0;padding:2px;border-radius:9px;background:var(--fill)}
+.form-kind button{border:0;border-radius:7px;background:none;color:var(--ink);font-weight:500}
+.form-kind button[aria-pressed=true]{background:var(--surface);color:var(--ink);border:0;font-weight:600;box-shadow:0 3px 8px #0000001f,0 0 0 .5px #0000000a}
+:root[data-theme=dark] .form-kind button[aria-pressed=true]{background:#636366;box-shadow:none}
+.mini-select,.filters-row select,.filters-row input,.search-field input,.field input,.field select,.field textarea{border:0;border-radius:10px;background-color:var(--fill);color:var(--ink)}
+.field input:hover,.field select:hover,.field textarea:hover{border:0}
+.mini-select:focus,.filters-row select:focus,.filters-row input:focus,.search-field input:focus,.field input:focus,.field select:focus,.field textarea:focus{border:0;box-shadow:0 0 0 3px var(--ring);background-color:var(--surface)}
+.field input[aria-invalid=true],.field select[aria-invalid=true]{border:0;box-shadow:0 0 0 2px var(--danger)}
+.field input:disabled,.field select:disabled{opacity:.55}
+.value-field input{font-family:var(--font-display);font-weight:500;font-size:28px;letter-spacing:-.4px}
+.field label,.field>span:first-child{font-weight:600;font-size:13px;color:var(--muted)}
+.badge{border-radius:999px;font-weight:600}
+.alert{border:0;border-radius:var(--r-lg)}
+.alert .button{border-radius:999px}
+/* seleção redonda (estilo lista do iOS) */
+input[type=checkbox]{appearance:none;-webkit-appearance:none;width:22px;height:22px;margin:0;border-radius:50%;border:1.5px solid var(--line-strong);background:var(--surface);display:inline-grid;place-content:center;cursor:pointer;flex-shrink:0;transition:background var(--dur-1),border-color var(--dur-1)}
+:root[data-theme=dark] input[type=checkbox]{border-color:#636366;background:transparent}
+input[type=checkbox]::before{content:'';width:12px;height:12px;background:#fff;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/contain no-repeat;transform:scale(0);transition:transform var(--dur-2) var(--ease)}
+input[type=checkbox]:checked{background:var(--brand);border-color:var(--brand)}
+input[type=checkbox]:checked::before{transform:scale(1);background:var(--brand-on)}
+input[type=checkbox]:indeterminate{background:var(--brand);border-color:var(--brand)}
+input[type=checkbox]:indeterminate::before{transform:scale(1);height:2.5px;background:var(--brand-on);-webkit-mask:none;mask:none;border-radius:2px}
+
+/* "Todos os períodos" vira um interruptor (UISwitch) */
+.check-label{gap:10px;color:var(--ink);font-weight:500}
+.check-label input[type=checkbox],.check-label input[type=checkbox]:is(*){width:46px;height:28px;border:0;border-radius:999px;background:var(--fill);display:inline-block;position:relative;transition:background var(--dur-2) var(--ease)}
+.check-label input[type=checkbox]::before{content:'';position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:#fff;-webkit-mask:none;mask:none;transform:none;box-shadow:0 3px 8px #00000026,0 1px 1px #00000029;transition:transform var(--dur-2) var(--ease)}
+.check-label input[type=checkbox]:checked{background:var(--sage)}
+.check-label input[type=checkbox]:checked::before{background:#fff;transform:translateX(18px)}
+
+/* barras de orçamento */
+.budget-amount{font-family:var(--font-display)}
+.budget-amount .helper,.budget-pct{font-family:var(--font-text)}
+.budget-pct{background:var(--fill)}
+.bar-fill.realized,.bar-legend i{background:var(--brand)}
+
+/* ============ 10. MOVIMENTAÇÕES ============ */
+.filters-row{border-radius:var(--r-xl) var(--r-xl) 0 0;border-bottom:.5px solid var(--line)}
+.table-container{border-radius:0 0 var(--r-xl) var(--r-xl)}
+.transaction-table th{background:var(--surface);color:var(--muted);font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;border-bottom:.5px solid var(--line-strong)}
+:root[data-theme=dark] .transaction-table th{border-bottom-color:var(--line)}
+.transaction-table td{border-bottom:.5px solid var(--line)}
+.transaction-table tbody tr:hover{background:var(--fill-2)}
+.transaction-table thead th{box-shadow:none}
+.mobile-transaction{border-bottom:.5px solid var(--line)}
+.row-menu[open]>div,.bulk-toolbar{background:var(--material-thick);-webkit-backdrop-filter:saturate(180%) blur(30px);backdrop-filter:saturate(180%) blur(30px);border:0;border-radius:14px;box-shadow:var(--shadow-overlay)}
+.row-menu button:hover,.row-menu summary:hover{background:var(--fill)}
+
+/* ============ 11. FOLHAS, MENUS, AVISOS ============ */
+dialog{border:0;border-radius:22px;background:var(--surface-raised);box-shadow:var(--shadow-overlay)}
+:root:not([data-theme=dark]) dialog{background:var(--canvas)}
+dialog::backdrop{background:#00000059}
+.modal-head{border-bottom:0}
+.modal-head h2{font-size:20px}
+.modal-footer{border-top:0}
+.modal-body .field input,.modal-body .field select,.modal-body .field textarea{background-color:var(--surface)}
+:root[data-theme=dark] .modal-body .field :is(input,select,textarea){background-color:var(--fill)}
+.sheet-action{border:0;border-radius:14px;background:var(--surface)}
+.sheet-action:hover{background:var(--surface);filter:brightness(.98)}
+.sheet-action .icon{border-radius:50%;background:var(--brand);color:var(--brand-on)}
+.toast{background:var(--material-thick);color:var(--ink);-webkit-backdrop-filter:saturate(180%) blur(30px);backdrop-filter:saturate(180%) blur(30px);border-radius:999px;box-shadow:var(--shadow-overlay)}
+.toast .text-button{color:var(--brand)}
+.update-banner{background:var(--material-thick);-webkit-backdrop-filter:saturate(180%) blur(30px);backdrop-filter:saturate(180%) blur(30px);border:0;border-radius:18px}
+.tip{background:var(--material-thick);color:var(--ink);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border-radius:12px}
+
+/* ============ 12. LOGIN E CARREGAMENTO ============ */
+#identity-gate .primary{border-radius:999px}
+#identity-gate .ghost{border-radius:999px;border:0;background:var(--fill)}
+.page-skeleton>div,.sk-kpis>div{border-radius:var(--r-xl);background:linear-gradient(100deg,var(--surface) 30%,var(--surface-2) 50%,var(--surface) 70%);background-size:220% 100%}
+
+/* ============ 13. CELULAR: BARRA DE ABAS FLUTUANTE (vidro) ============ */
+@media(max-width:959px){
+  .app-header{padding-top:calc(14px + env(safe-area-inset-top))}
+  .app-header h1{font-size:34px}
+  .header-subtitle{display:none}
+  .context-bar{margin-top:8px;margin-bottom:14px}
+  .mobile-nav{background:var(--glass);-webkit-backdrop-filter:saturate(200%) blur(28px);backdrop-filter:saturate(200%) blur(28px);border:.5px solid var(--glass-line);border-radius:30px;box-shadow:0 10px 34px -10px #00000040,inset 0 .5px 0 #ffffff80;padding:5px}
+  :root[data-theme=dark] .mobile-nav{box-shadow:0 10px 34px -10px #000000cc,inset 0 .5px 0 #ffffff1f}
+  .mobile-nav a,.mobile-nav button:not(.fab){min-height:54px;border-radius:24px;font-size:10.5px;font-weight:500;color:var(--ink);gap:2px}
+  .mobile-nav [aria-current=page]{background:var(--fill);color:var(--brand);font-weight:600}
+  .mobile-nav [aria-current=page] .icon{color:var(--brand)}
+  .mobile-nav [aria-current=page]::before{content:none}
+  .mobile-nav .fab{width:50px;height:50px;min-height:50px;margin-top:0;border-radius:50%;background:var(--brand);color:var(--brand-on);box-shadow:0 6px 16px -6px var(--brand)}
+  .mobile-nav .fab:hover{transform:none}
+  .modal-head::before{background:var(--line-strong);width:36px;height:5px;border-radius:3px}
+  dialog{border-radius:22px 22px 0 0}
+  .toast{border-radius:18px}
+}
+@media(max-width:639px){
+  .panel{padding:16px;border-radius:20px}
+  .hero{border-radius:24px}
+  .kpi{padding:14px}
+  .quick{min-height:72px;font-size:12px}
+  .quick .icon{width:34px;height:34px;padding:7px}
+}
+
+/* ============ 14. MOVIMENTO ============ */
+@media(prefers-reduced-motion:reduce){.context-bar{transition:none}}
+
+/* ======================================================================
+   15. LIQUID GLASS — só na camada de navegação
+   Regra da Apple (HIG): o vidro é a camada dos controles que flutuam sobre o
+   conteúdo; o conteúdo continua limpo e sólido. Receita tirada de
+   rdev/liquid-glass-react e archisvaze/liquid-glass: vidro claro (pouca tinta,
+   desfoque baixo, saturação alta), brilho interno suave, borda fina com reflexo
+   em gradiente e sombra externa leve.
+   Onde tem vidro: barra de abas, botões redondos do topo, barra do mês ao rolar,
+   barra lateral flutuante, folhas, menus e avisos.
+   ====================================================================== */
+:root,
+:root[data-theme=light]{
+  --lg-tint:#ffffff8f;
+  --lg-tint-thick:#f9f9fbd1;
+  --lg-filter:blur(12px) saturate(180%) brightness(1.05);
+  --lg-filter-thick:blur(28px) saturate(180%);
+  --lg-glow:inset 0 0 6px 0 #ffffffb3;
+  --lg-shadow:0 1px 3px #00000014,0 6px 20px #0000001a;
+  --lg-rim:linear-gradient(135deg,#ffffff00 0%,#ffffffb3 33%,#ffffff33 50%,#ffffffe6 66%,#ffffff00 100%);
+  --lg-edge:#0000000f;
+  --lg-select:#7676801f;
+  --r-xl:26px;
+}
+:root[data-theme=dark]{
+  --lg-tint:#2c2c2e8f;
+  --lg-tint-thick:#1c1c1ed9;
+  --lg-filter:blur(12px) saturate(180%) brightness(.92);
+  --lg-glow:inset 0 0 6px 0 #ffffff14;
+  --lg-shadow:0 1px 3px #00000066,0 8px 24px #00000080;
+  --lg-rim:linear-gradient(135deg,#ffffff00 0%,#ffffff4d 33%,#ffffff0d 50%,#ffffff66 66%,#ffffff00 100%);
+  --lg-edge:#ffffff14;
+  --lg-select:#ffffff1f;
+}
+
+/* receita: tinta + desfoque + brilho interno + borda reflexiva (::before) */
+.mobile-nav,.header-actions .icon-button,:root[data-scrolled] .context-bar{
+  background:var(--lg-tint);-webkit-backdrop-filter:var(--lg-filter);backdrop-filter:var(--lg-filter);
+  border:0;box-shadow:var(--lg-glow),0 0 0 .5px var(--lg-edge),var(--lg-shadow);isolation:isolate}
+.header-actions .icon-button{position:relative}
+.mobile-nav::before,.header-actions .icon-button::before,.context-bar::before,.sidebar::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:var(--lg-rim);pointer-events:none;z-index:1;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.context-bar::before{opacity:0;transition:opacity var(--dur-2)}
+:root[data-scrolled] .context-bar::before{opacity:1}
+
+/* botões redondos do topo (como a barra de ferramentas do iOS 26) */
+.header-actions .icon-button{width:40px;min-width:40px;height:40px;min-height:40px;border-radius:50%;color:var(--ink)}
+.header-actions .icon-button:hover{background:var(--lg-tint);filter:brightness(1.04)}
+.header-actions .avatar{width:40px;height:40px}
+
+/* barra do mês: cápsula; ao rolar, vira vidro sobre o conteúdo */
+.context-bar{border-radius:999px;padding:5px}
+.period-control{border-radius:999px;padding:3px}
+.period-control .icon-button{border-radius:50%;width:32px;min-width:32px;min-height:32px}
+.month-label input{border-radius:999px}
+:root[data-scrolled] .context-bar{background:var(--lg-tint-thick);-webkit-backdrop-filter:var(--lg-filter-thick);backdrop-filter:var(--lg-filter-thick);box-shadow:var(--lg-glow),0 0 0 .5px var(--lg-edge),var(--lg-shadow)}
+:root[data-scrolled] .context-bar .period-control{background:transparent}
+
+/* barra lateral flutuante (iPadOS 26) */
+@media(min-width:960px){
+  .sidebar{inset:10px auto 10px 10px;height:auto;border:0;border-radius:28px;isolation:isolate;
+    background:var(--lg-tint-thick);-webkit-backdrop-filter:var(--lg-filter-thick);backdrop-filter:var(--lg-filter-thick);
+    box-shadow:var(--lg-glow),0 0 0 .5px var(--lg-edge),var(--lg-shadow)}
+  .main-shell{margin-left:252px;width:calc(100% - 252px)}
+}
+@media(min-width:1280px){.main-shell{margin-left:276px;width:calc(100% - 276px)}}
+@media(min-width:1980px){.main-shell{margin-left:calc((100% + 276px - 1640px)/2);width:1640px}}
+.new-entry{border-radius:999px}
+#main-nav a,.settings-link{border-radius:999px;padding:0 12px}
+#main-nav a[aria-current=page],.settings-link[aria-current=page]{background:var(--lg-select);color:var(--ink)}
+#main-nav a[aria-current=page] .icon,.settings-link[aria-current=page] .icon{color:var(--brand)}
+.profile-button{border-radius:18px}
+
+/* conteúdo: limpo, cantos grandes e concêntricos */
+.panel{border-radius:var(--r-xl)}
+.hero{border-radius:28px}
+.kpi,.safe,.account-card,.account-summary>div{border-radius:22px}
+.quick{border-radius:18px}
+.segment,.form-kind,.seg{border-radius:999px}
+.segment button,.form-kind button,.seg button{border-radius:999px}
+.field input,.field select,.field textarea,.mini-select,.filters-row select,.filters-row input,.search-field input{border-radius:12px}
+
+/* folhas, menus e avisos: vidro mais espesso (precisa ler o texto) */
+dialog,:root:not([data-theme=dark]) dialog{background:var(--lg-tint-thick);-webkit-backdrop-filter:var(--lg-filter-thick);backdrop-filter:var(--lg-filter-thick);border-radius:32px;box-shadow:var(--lg-glow),0 0 0 .5px var(--lg-edge),0 24px 64px -16px #00000059}
+.modal-head,.modal-footer{background:transparent}
+.row-menu[open]>div,.bulk-toolbar,.toast,.update-banner,.tip{background:var(--lg-tint-thick);-webkit-backdrop-filter:var(--lg-filter-thick);backdrop-filter:var(--lg-filter-thick);box-shadow:var(--lg-glow),0 0 0 .5px var(--lg-edge),var(--lg-shadow)}
+.row-menu[open]>div{border-radius:20px}
+
+/* celular: barra de abas em cápsula; item ativo ganha a "lente" */
+@media(max-width:959px){
+  .mobile-nav{left:16px;right:16px;bottom:calc(10px + env(safe-area-inset-bottom));border-radius:999px;padding:4px}
+  :root[data-theme=dark] .mobile-nav{box-shadow:var(--lg-glow),0 0 0 .5px var(--lg-edge),var(--lg-shadow)}
+  .mobile-nav a,.mobile-nav button:not(.fab){min-height:52px;border-radius:999px;color:var(--ink)}
+  .mobile-nav [aria-current=page]{background:var(--lg-select);color:var(--brand)}
+  .mobile-nav .fab{width:48px;height:48px;min-height:48px;box-shadow:0 4px 12px -4px color-mix(in srgb,var(--brand) 70%,transparent)}
+  .context-bar{border-radius:26px}
+  :root[data-scrolled] .context-bar .sync-control{display:none}
+  dialog{border-radius:32px 32px 0 0}
+}
+
+/* acessibilidade: sem transparência quando o sistema pede */
+@media(prefers-reduced-transparency:reduce){
+  :root,:root[data-theme=light]{--lg-tint:#f9f9fb;--lg-tint-thick:#f9f9fb;--lg-filter:none;--lg-filter-thick:none}
+  :root[data-theme=dark]{--lg-tint:#2c2c2e;--lg-tint-thick:#1c1c1e;--lg-filter:none;--lg-filter-thick:none}
+}
+
+/* ============ 16. FLUXO DO MÊS EM BARRA (estilo Armazenamento do iPhone) ============ */
+.flow-total{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;margin:2px 0 14px}
+.flow-total>div{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.flow-total strong{font:500 22px/1.15 var(--font-display);letter-spacing:-.3px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.flow-total span{font-size:14px;color:var(--muted)}
+.flow-total .pos strong{color:var(--sage)}
+.flow-total .neg strong{color:var(--danger)}
+.stack-bar{display:flex;gap:2px;height:12px;border-radius:99px;overflow:hidden;background:var(--fill)}
+.stack-bar i{min-width:3px;flex-basis:0}
+.stack-legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0 28px;margin:16px 0 0;padding:0;list-style:none}
+.stack-legend li{display:grid;grid-template-columns:10px minmax(0,1fr) auto 38px;align-items:center;gap:10px;min-height:40px;border-bottom:.5px solid var(--line);font-size:14px}
+.stack-legend li>i{width:10px;height:10px;border-radius:50%}
+.stack-legend span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.stack-legend b{font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink)}
+.stack-legend em{font-style:normal;font-size:13px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.stack-legend li.special span,.stack-legend li.special b{color:var(--sage)}
+@media(max-width:639px){
+  .flow-total strong{font-size:20px}
+  .stack-legend{grid-template-columns:1fr}
+}

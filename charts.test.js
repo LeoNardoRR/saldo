@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {niceMax,axisTicks,axisLabel,donutShares,sparkPoints,sparkline,evolutionChart,donut} from './charts.js';
+import {niceMax,axisTicks,axisLabel,donutShares,sparkPoints,sparkline,evolutionChart,donut,areaChart,miniLine,paceChart,flowChart} from './charts.js';
 
 test('Teto do eixo é redondo e nunca menor que o maior valor',()=>{
   for(const cents of [1,99,100,12345,250000,999999,1234567,98765432]){
@@ -61,4 +61,25 @@ test('Gráfico de evolução tem uma coluna acessível por mês, valores no tool
 test('Textos dinâmicos dos gráficos são escapados',()=>{
   const html=evolutionChart({history:[{month:'2026-07',income:1,expense:1}],month:'2026-07',monthName:()=>'<img src=x onerror=1>'});
   assert.ok(!html.includes('<img src=x'));
+});
+
+test('gráficos da visão geral: área, mini-linha, ritmo e fluxo', () => {
+  const area=areaChart([{date:'2026-11-01',value:1000},{date:'2026-11-02',value:3000}],{label:d=>d});
+  assert.match(area,/class="area-line"/);
+  assert.equal((area.match(/class="area-zone"/g)||[]).length,2);
+  assert.equal(areaChart([{date:'2026-11-01',value:1}]),'');
+  assert.match(miniLine([0,100,250]),/mini-stroke/);
+  assert.equal(miniLine([0,0,0]),'');
+  const pace=paceChart({current:[100,300],previous:[50,100,400],days:30});
+  assert.match(pace,/pace-now/);assert.match(pace,/pace-before/);assert.match(pace,/dia 30/);
+  const flow=flowChart({sources:[{name:'Salário',total:10000}],targets:[{name:'Casa',total:6000},{name:'<b>x</b>',total:1000}],income:10000,expense:7000,surplus:3000,deficit:0},{cash:v=>`R$ ${v/100}`});
+  assert.match(flow,/Sobrou/);
+  assert.match(flow,/class="stack-bar"/);
+  assert.equal((flow.match(/<i style="flex-grow/g)||[]).length,3,'uma fatia por categoria e uma para o que sobrou');
+  assert.match(flow,/60%/);
+  const short=flowChart({sources:[],targets:[{name:'Casa',total:9000},{name:'Outras',total:3000,other:true}],income:10000,expense:12000,surplus:0,deficit:2000},{cash:v=>`R$ ${v/100}`});
+  assert.ok(!short.includes('Sobrou'),'sem sobra não mostra a fatia verde');
+  assert.match(short,/var\(--c6\)/,'"Outras" fica cinza');
+  assert.ok(!flow.includes('<b>x</b>'),'nome de categoria precisa ser escapado');
+  assert.equal(flowChart({sources:[],targets:[],income:0,expense:0,surplus:0,deficit:0}),'');
 });

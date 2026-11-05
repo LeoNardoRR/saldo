@@ -3,7 +3,7 @@ import {createStore,STORE_KEY} from './store.js';
 import {createSync} from './sync.js';
 import {dataState} from './sync-merge.js';
 import {shiftMonth} from './finance.js';
-import {today,money,monthLabel,filteredEntries} from './product.js';
+import {today,money,filteredEntries} from './product.js';
 import {$,esc,icon,hydrateIcons,avatar,modal,action,download} from './ui.js';
 import {pages,pageMeta} from './views.js';
 import * as flows from './flows.js';
@@ -26,7 +26,7 @@ let lastData='',firstCloud=true;
 function saveContext(){try{sessionStorage.setItem(workspace.monthKey,ctx.month);}catch{}}
 function updateHeader(){
   const [title,subtitle]=pageMeta[ctx.page];$('#page-title').textContent=title;$('#page-subtitle').textContent=subtitle;document.title=`${title} · Saldo`;
-  $('#month').value=ctx.month;$('#month-display').textContent=monthLabel(ctx.month);$('#period-control').hidden=ctx.page==='settings'||ctx.page==='recurring';
+  $('#month').value=ctx.month;$('#period-control').hidden=ctx.page==='settings'||ctx.page==='recurring';
   document.querySelectorAll('[data-page]').forEach(a=>{if(a.dataset.page===ctx.page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   const more=$('.mobile-nav [data-action=more]');if(['settings','recurring','planning'].includes(ctx.page))more.setAttribute('aria-current','page');else more.removeAttribute('aria-current');
   document.body.classList.toggle('values-hidden',Boolean(ctx.preferences.hidden));
@@ -52,7 +52,7 @@ ctx.render=()=>{
   if(ctx.flash){const ids=ctx.flash;ctx.flash=null;for(const id of ids)main.querySelectorAll(`[data-entry-id="${CSS.escape(id)}"],[data-select="${CSS.escape(id)}"]`).forEach(el=>(el.closest('tr,article')||el).classList.add('row-flash'));}
   if(ctx.store?.legacyChanged())main.insertAdjacentHTML('afterbegin',`<div class="alert warning"><div><strong>Uma versão antiga alterou dados neste aparelho</strong><p>Salve um backup na janela antiga antes de restaurar aqui. Feche versões antigas para evitar divergências.</p></div></div>`);
 };
-ctx.navigate=page=>{if(!pages[page])return;if(ctx.page!==page){ctx.page=page;ctx.selected.clear();ctx.render();$('.main-shell').scrollTo({top:0,behavior:'instant'});window.scrollTo({top:0,behavior:'instant'});}if(location.hash!==`#${page}`)location.hash=page;};
+ctx.navigate=page=>{if(!pages[page])return;if(ctx.page!==page){ctx.page=page;ctx.selected.clear();ctx.render();window.scrollTo({top:0,behavior:'instant'});}if(location.hash!==`#${page}`)location.hash=page;};
 ctx.setMonth=month=>{ctx.month=month;ctx.filter.page=1;ctx.selected.clear();saveContext();ctx.render();};
 
 ctx.store=createStore({storage:workspace.storage,onChange:state=>{
@@ -127,9 +127,10 @@ function invoke(name,button){
     case 'install':return $('#install-app').click();
     case 'dismiss-setup':ctx.setPreference('setupDismissed',true);return ctx.render();
     case 'change-month':return ctx.setMonth(id);
+    case 'hero-range':ctx.heroRange=['month','6m','12m'].includes(id)?id:'month';return ctx.render();
     case 'more-categories':ctx.categoryExpanded=!ctx.categoryExpanded;return ctx.render();
     case 'quick':return modal({title:'Novo registro',body:`<div class="sheet-actions">${[['expense','Nova despesa','arrow-up','Saiu dinheiro ou compra no cartão'],['income','Nova receita','arrow-down','Salário, venda ou outro recebimento'],['transfer','Transferência','transfer','Entre suas contas ou pagamento de fatura']].map(([type,label,ic,help])=>`<button type="button" class="sheet-action" data-action="sheet-entry" data-id="${type}">${icon(ic)}<span><strong>${label}</strong><small>${help}</small></span></button>`).join('')}<button type="button" class="sheet-action" data-action="sheet-agenda">${icon('clock')}<span><strong>Vencimentos</strong><small>Confirmar o que já foi pago ou recebido</small></span></button></div>`,onAction:(name,b,owner)=>{owner.close(true);if(name==='sheet-entry')flows.entryForm(ctx,null,{type:b.dataset.id});if(name==='sheet-agenda')flows.agenda(ctx);}});
-    case 'more':return modal({title:'Mais do seu Saldo',body:`<nav class="sheet-actions" aria-label="Mais seções">${[['planning','Orçamento e metas','target','Limites para o mês e seus objetivos'],['recurring','Recorrências e parcelas','repeat','Acompanhe compromissos que se repetem'],['settings','Configurações e backups','settings','Preferências, categorias e seus dados']].map(([page,label,ic,help])=>`<a class="sheet-action" href="#${page}">${icon(ic)}<span><strong>${label}</strong><small>${help}</small></span>${icon('chevron-right','sheet-chevron')}</a>`).join('')}<button type="button" class="sheet-action" data-action="profile">${icon('camera')}<span><strong>Seu perfil</strong><small>Nome e foto do seu espaço</small></span>${icon('chevron-right','sheet-chevron')}</button></nav>`,onAction:(name,b,owner)=>{owner.close(true);if(name==='profile')flows.profileForm(ctx);}});
+    case 'more':return modal({title:'Mais do seu Saldo',body:`<div class="manager-list"><a class="button secondary" href="#planning">Orçamento e metas</a><a class="button secondary" href="#recurring">Recorrências e parcelas</a><a class="button secondary" href="#settings">Configurações e backups</a>${action('profile','Editar perfil e foto',{cls:'button secondary'})}</div>`,onAction:(name,b,owner)=>{owner.close(true);if(name==='profile')flows.profileForm(ctx);}});
   }
 }
 

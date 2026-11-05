@@ -1,27 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {accountBalance,validSettings,shiftMonth} from './finance.js';
-import {available,cashSummary,agendaItems,pendingTotals,categoryTotals,filteredEntries,recurringGroups,compareCash,csvText,today,monthPlan} from './product.js';
+import {available,cashSummary,agendaItems,pendingTotals,categoryTotals,filteredEntries,recurringGroups,compareCash,csvText,today} from './product.js';
 
 const bank={id:'bank',name:'Banco',type:'bank',opening:100000,openingDate:'2020-01-01',closingDay:25,dueDay:5};
 const card={id:'card',name:'Cartão',type:'credit',opening:0,openingDate:'2020-01-01',closingDay:25,dueDay:5};
 const entry=(id,type,cents,extra={})=>({id,type,cents,description:id,category:type==='income'?'Salário':'Alimentação',account:'Banco',date:'2025-05-10',dueDate:'2025-05-10',status:'settled',settledDate:'2025-05-10',...extra});
 const state=entries=>({entries,accounts:[bank,card],settings:{profile:{name:'',photo:''},goals:[],budgets:[]}});
-
-test('Previsão mensal mostra déficit mesmo com saldo inicial e salário ainda previsto',()=>{
-  const s=state([entry('salario','income',300000,{status:'planned',settledDate:''}),entry('contas','expense',301249,{status:'planned',settledDate:''})]);
-  assert.deepEqual(monthPlan(s,'2025-05'),{income:300000,expense:301249,balance:-1249,count:2,unconfirmed:0});
-  assert.equal(available(s,'2025-05-31'),100000);
-});
-test('Previsão mensal combina realizados e previstos sem duplicar cartão e transferências',()=>{
-  const s=state([entry('salario','income',300000),entry('compra','expense',40000,{account:'Cartão'}),entry('fatura','transfer',40000,{toAccount:'Cartão'}),entry('previsto','expense',20000,{status:'planned',settledDate:''}),entry('outro-mes','expense',90000,{date:'2025-06-10'})]);
-  assert.deepEqual(monthPlan(s,'2025-05'),{income:300000,expense:60000,balance:240000,count:3,unconfirmed:0});
-});
-test('Previsão mensal usa referência e separa registros sem confirmação',()=>{
-  const s=state([entry('conta','expense',10000,{status:'planned',dueDate:'2025-06-05'}),entry('antigo','income',500000,{status:'legacy'})]);
-  assert.deepEqual(monthPlan(s,'2025-05'),{income:0,expense:10000,balance:-10000,count:1,unconfirmed:1});
-  assert.deepEqual(monthPlan(s,'2025-06'),{income:0,expense:0,balance:0,count:0,unconfirmed:0});
-});
 
 test('Saldo inicial futuro fica fora do disponível até a data de abertura',()=>{
   const future={...bank,opening:70000,openingDate:'2027-01-01'};
@@ -96,4 +81,44 @@ test('CSV exporta apenas o recorte recebido, mantém centavos e neutraliza fórm
 test('Backup aceita objetivo sem prazo e rejeita prazo impossível',()=>{
   const settings=state([]).settings;settings.goals=[{id:'g',name:'Reserva',target:100000,saved:0}];
   assert.equal(validSettings(settings),true);settings.goals[0].targetDate='2026-02-30';assert.equal(validSettings(settings),false);
+});
+
+// ---- Visão geral 5.1 ----
+import {spendingPace,cashSeries,safeToSpend,balanceSeries,moneyFlow} from './product.js';
+test('Ritmo de gasto acumula por referência e compara no mesmo dia do mês anterior',()=>{
+  const s=state([entry('a','expense',10000,{date:'2025-05-02'}),entry('b','expense',5000,{date:'2025-05-09',account:'Cartão'}),entry('c','expense',7000,{date:'2025-05-20',status:'planned',settledDate:''}),entry('d','expense',4000,{date:'2025-04-05'}),entry('e','expense',9000,{date:'2025-04-28'}),entry('t','transfer',99999,{toAccount:'Cartão'}),entry('r','income',50000)]);
+  const p=spendingPace(s,'2025-05','2025-05-10');
+  assert.equal(p.cut,10);assert.equal(p.current.length,10);assert.equal(p.spent,15000);
+  assert.equal(p.before,4000);assert.equal(p.previousTotal,13000);assert.equal(p.difference,11000);assert.equal(p.percent,275);
+  assert.equal(spendingPace(s,'2025-04','2025-05-10').spent,13000);
+  assert.equal(spendingPace(s,'2025-06','2025-05-10').cut,0);
+});
+test('Séries de caixa acumulam só realizados até a data de corte',()=>{
+  const s=state([entry('r','income',30000,{settledDate:'2025-05-03'}),entry('p','expense',10000,{settledDate:'2025-05-04'}),entry('prev','expense',5000,{status:'planned',settledDate:''}),entry('compra','expense',8000,{account:'Cartão',settledDate:'2025-05-04'})]);
+  const c=cashSeries(s,'2025-05','2025-05-05');
+  assert.deepEqual(c.income,[0,0,30000,30000,30000]);assert.deepEqual(c.expense,[0,0,0,10000,10000]);
+});
+test('Livre para gastar desconta tudo a pagar e ignora recebimentos previstos',()=>{
+  const s=state([entry('pagar','expense',30000,{date:'2025-05-20',dueDate:'2025-05-20',status:'planned',settledDate:''}),entry('atraso','expense',10000,{date:'2025-04-20',dueDate:'2025-04-20',status:'planned',settledDate:''}),entry('receber','income',99000,{date:'2025-05-25',dueDate:'2025-05-25',status:'planned',settledDate:''})]);
+  const realToday=today();
+  const asOf=realToday.slice(0,7)+'-01';
+  const f=safeToSpend(s,asOf.slice(0,7),asOf);
+  assert.equal(f.balance,100000);assert.equal(f.pay,40000);assert.equal(f.free,60000);assert.equal(f.receive,99000);
+  assert.equal(f.perDay,Math.floor(60000/f.daysLeft));
+  assert.equal(safeToSpend(s,'2020-01',asOf),null);
+});
+test('Série do saldo: dia a dia no mês e semanal em 6 meses, terminando no corte',()=>{
+  const s=state([entry('r','income',50000,{settledDate:'2025-05-03'})]);
+  const m=balanceSeries(s,'2025-05','month','2025-05-04');
+  assert.equal(m.length,5);assert.equal(m[0].date,'2025-04-30');assert.equal(m.at(-1).value,150000);
+  const w=balanceSeries(s,'2025-05','6m','2025-05-04');
+  assert.equal(w[0].date,'2024-11-04');assert.equal(w.at(-1).date,'2025-05-04');assert.ok(w.length>=26&&w.length<=28);
+  assert.deepEqual(balanceSeries(s,'2025-07','month','2025-05-04'),[]);
+});
+test('Fluxo do mês agrupa categorias, junta excedentes em Outras e mostra a sobra',()=>{
+  const cats=['A','B','C','D','E','F','G'];
+  const s=state([entry('sal','income',100000),...cats.map((c,i)=>entry('x'+c,'expense',1000*(i+1),{category:c}))]);
+  const f=moneyFlow(s,'2025-05');
+  assert.equal(f.targets.length,6);assert.equal(f.targets.at(-1).name,'Outras');assert.equal(f.targets.at(-1).total,3000);
+  assert.equal(f.expense,28000);assert.equal(f.surplus,72000);assert.equal(f.deficit,0);
 });
