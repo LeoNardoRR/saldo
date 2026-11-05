@@ -65,8 +65,8 @@ export function agendaItems(state, month, asOf=today()) {
   return items.sort((a,b)=>a.date.localeCompare(b.date)||a.label.localeCompare(b.label,'pt-BR'));
 }
 
-export function pendingTotals(state, month) {
-  const items=agendaItems(state,month),totals={pay:0,receive:0,unconfirmed:0,overdue:0,items};
+export function pendingTotals(state, month, asOf=today()) {
+  const items=agendaItems(state,month,asOf),totals={pay:0,receive:0,unconfirmed:0,overdue:0,items};
   for(const item of items) {
     if(item.status==='legacy') {totals.unconfirmed+=item.cents;continue;}
     if(item.type==='transfer') continue;
@@ -189,6 +189,15 @@ export function safeToSpend(state, month, asOf=today()) {
   const balance=available(state,asOf),pending=pendingTotals(state,month),free=balance-pending.pay;
   const daysLeft=daysIn(month)-Number(asOf.slice(-2))+1;
   return {balance,pay:pending.pay,receive:pending.receive,free,daysLeft,perDay:free>0?Math.floor(free/daysLeft):0};
+}
+
+// Forecast for the current month: realized cash already includes paid/received entries.
+// Only outstanding obligations are applied again, including overdue entries and card bills.
+export function monthForecast(state, month, asOf=today()) {
+  if(month!==asOf.slice(0,7)) return null;
+  const balance=available(state,asOf),pending=pendingTotals(state,month,asOf);
+  return {balance,receive:pending.receive,pay:pending.pay,overdue:pending.overdue,
+    unconfirmed:pending.unconfirmed,projected:balance+pending.receive-pending.pay};
 }
 
 // Saldo disponível ao longo do tempo. 'month' = dia a dia no mês; '6m'/'12m' = pontos semanais até o corte.

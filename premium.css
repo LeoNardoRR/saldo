@@ -20,6 +20,19 @@ button,input,select,textarea{font:inherit}button,a,input,select,textarea{touch-a
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
 .finance-table-host [data-slot=table-container]{width:100%;overflow-x:auto}.finance-chart{font-variant-numeric:tabular-nums}.finance-chart .recharts-cartesian-axis-tick-value{fill:var(--muted)}
+.month-forecast .safe-value::after{content:none}
+.forecast-details{grid-column:1/-1;margin-top:12px;min-width:0}
+.forecast-details summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;cursor:pointer;color:var(--secondary);font-size:12px;list-style:none}
+.forecast-details summary::-webkit-details-marker{display:none}
+.forecast-details summary .icon{width:16px;height:16px;flex-shrink:0}
+.forecast-details[open] summary .icon{transform:rotate(180deg)}
+.forecast-details dl{display:grid;gap:10px;margin:8px 0 12px;font-size:12px}
+.forecast-details dl>div{display:flex;justify-content:space-between;gap:12px}
+.forecast-details dt{color:var(--secondary)}
+.forecast-details dd{margin:0;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
+.forecast-details .text-button{display:inline-flex;align-items:center;min-height:44px;margin-top:4px}
+.month-forecast .forecast-note{color:var(--muted);font-size:12px;line-height:1.5}
+@media(max-width:959px){.dash-side:has(.month-forecast){display:contents}.dash .month-forecast{display:block;order:-2}.month-forecast .safe-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.month-forecast .safe-head small{margin:0;white-space:nowrap}.month-forecast .safe-value{margin-top:12px;text-align:left;font-size:30px;overflow-wrap:anywhere}}
 @media(max-width:959px){.finance-table-host{display:none}}
 
 /* Anchor navigation to the viewport; keep the home-indicator inset inside the bar. */

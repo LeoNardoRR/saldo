@@ -84,7 +84,43 @@ test('Backup aceita objetivo sem prazo e rejeita prazo impossível',()=>{
 });
 
 // ---- Visão geral 5.1 ----
-import {spendingPace,cashSeries,safeToSpend,balanceSeries,moneyFlow} from './product.js';
+import {spendingPace,cashSeries,safeToSpend,monthForecast,balanceSeries,moneyFlow} from './product.js';
+test('Previsão soma salário pendente ao saldo e desconta compromissos e atrasos, sem legado ou meses futuros',()=>{
+  const planned={status:'planned',settledDate:''};
+  const s=state([
+    entry('salário','income',300000,{...planned,dueDate:'2025-05-30'}),
+    entry('aluguel','expense',80000,{...planned,dueDate:'2025-05-30'}),
+    entry('atrasado','expense',20000,{...planned,dueDate:'2025-04-30'}),
+    entry('pago','expense',10000,{settledDate:'2025-05-02'}),
+    entry('legado','expense',99999,{...planned,status:'legacy'}),
+    entry('junho','expense',99999,{...planned,dueDate:'2025-06-01'}),
+    entry('interna','transfer',50000,{...planned,toAccount:'Carteira'}),
+  ]);
+  const original=structuredClone(s),f=monthForecast(s,'2025-05','2025-05-05');
+  assert.deepEqual(f,{balance:90000,receive:300000,pay:100000,overdue:20000,unconfirmed:99999,projected:290000});
+  assert.deepEqual(s,original);
+  assert.equal(monthForecast(s,'2025-04','2025-05-05'),null);
+  assert.equal(monthForecast(s,'2025-06','2025-05-05'),null);
+});
+test('Previsão permanece igual ao confirmar receita, despesa e pagamento parcial da fatura',()=>{
+  const planned={status:'planned',settledDate:''};
+  const s=state([
+    entry('receber','income',30000,{...planned,dueDate:'2025-05-25'}),
+    entry('pagar','expense',15000,{...planned,dueDate:'2025-05-25'}),
+    entry('compra','expense',40000,{account:'Cartão',invoiceMonth:'2025-04'}),
+    entry('fatura-agendada','transfer',40000,{...planned,toAccount:'Cartão',invoiceMonth:'2025-04'}),
+  ]);
+  assert.equal(monthForecast(s,'2025-05','2025-05-15').projected,75000);
+  s.entries[0].status='settled';s.entries[0].settledDate='2025-05-15';
+  s.entries[1].status='settled';s.entries[1].settledDate='2025-05-15';
+  s.entries.push(entry('parcial','transfer',10000,{toAccount:'Cartão',invoiceMonth:'2025-04',settledDate:'2025-05-15'}));
+  const f=monthForecast(s,'2025-05','2025-05-15');
+  assert.equal(f.pay,30000);assert.equal(f.projected,75000);
+});
+test('Previsão mantém saldo negativo e centavos, sem transformar déficit em sobra zero',()=>{
+  const s=state([entry('despesa','expense',100001,{status:'planned',settledDate:'',dueDate:'2025-05-30'})]);
+  assert.equal(monthForecast(s,'2025-05','2025-05-05').projected,-1);
+});
 test('Ritmo de gasto acumula por referência e compara no mesmo dia do mês anterior',()=>{
   const s=state([entry('a','expense',10000,{date:'2025-05-02'}),entry('b','expense',5000,{date:'2025-05-09',account:'Cartão'}),entry('c','expense',7000,{date:'2025-05-20',status:'planned',settledDate:''}),entry('d','expense',4000,{date:'2025-04-05'}),entry('e','expense',9000,{date:'2025-04-28'}),entry('t','transfer',99999,{toAccount:'Cartão'}),entry('r','income',50000)]);
   const p=spendingPace(s,'2025-05','2025-05-10');
