@@ -5,6 +5,7 @@ import {dataState} from './sync-merge.js';
 import {bindMonthNavigation} from './month-navigation.js';
 import {today,money,filteredEntries} from './product.js';
 import {$,esc,icon,hydrateIcons,avatar,modal,action,download} from './ui.js';
+import {mountFinancialUI,unmountFinancialUI} from './financial-ui.js';
 import {pages,pageMeta} from './views.js';
 import * as flows from './flows.js';
 
@@ -48,7 +49,7 @@ function restoreFocus(saved){
 ctx.render=()=>{
   updateHeader();if(!ctx.state&&!ctx.storageError)return;
   if(ctx.storageError){main.innerHTML=`<div class="alert danger">${icon('alert')}<div><strong>Vamos preservar seus dados</strong><p>A cópia local precisa de recuperação. Exporte o conteúdo original antes de restaurar um backup válido.</p></div></div><div class="data-actions">${action('recovery-backup','Exportar recuperação',{cls:'button primary'})}${action('restore','Restaurar backup',{cls:'button secondary'})}</div>`;return;}
-  const saved=captureFocus();main.innerHTML=pages[ctx.page](ctx);main.setAttribute('aria-busy','false');restoreFocus(saved);
+  const saved=captureFocus();unmountFinancialUI();main.innerHTML=pages[ctx.page](ctx);mountFinancialUI(ctx);main.setAttribute('aria-busy','false');restoreFocus(saved);
   if(ctx.flash){const ids=ctx.flash;ctx.flash=null;for(const id of ids)main.querySelectorAll(`[data-entry-id="${CSS.escape(id)}"],[data-select="${CSS.escape(id)}"]`).forEach(el=>(el.closest('tr,article')||el).classList.add('row-flash'));}
   if(ctx.store?.legacyChanged())main.insertAdjacentHTML('afterbegin',`<div class="alert warning"><div><strong>Uma versão antiga alterou dados neste aparelho</strong><p>Salve um backup na janela antiga antes de restaurar aqui. Feche versões antigas para evitar divergências.</p></div></div>`);
 };
@@ -128,7 +129,11 @@ function invoke(name,button){
     case 'install':return $('#install-app').click();
     case 'dismiss-setup':ctx.setPreference('setupDismissed',true);return ctx.render();
     case 'change-month':return ctx.setMonth(id);
-    case 'overview-section':ctx.overviewSection=['summary','analysis','activity'].includes(id)?id:'summary';return ctx.render();
+    case 'overview-section':
+      ctx.overviewSection=['summary','analysis','activity'].includes(id)?id:'summary';
+      main.querySelectorAll('[data-action=overview-section]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.id===ctx.overviewSection)));
+      main.querySelectorAll('.overview-pane').forEach(pane=>pane.dataset.active=String(pane.id===`overview-${ctx.overviewSection}`));
+      return;
     case 'balance-range':
     case 'hero-range':ctx.heroRange=['month','6m','12m'].includes(id)?id:'month';return ctx.render();
     case 'more-categories':ctx.categoryExpanded=!ctx.categoryExpanded;return ctx.render();

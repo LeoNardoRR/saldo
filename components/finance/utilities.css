@@ -1,0 +1,10 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@source "../ui";
+@source "./";
+@theme inline {
+ --color-card:var(--surface);--color-card-foreground:var(--ink);
+ --color-primary:var(--brand);--color-primary-foreground:var(--brand-on);
+ --color-muted-foreground:var(--muted);--color-border:var(--line);
+ --color-background:var(--surface);--color-accent:var(--fill);--color-accent-foreground:var(--ink);--color-ring:var(--brand);
+}

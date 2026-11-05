@@ -14,7 +14,7 @@
     "db:generate": "drizzle-kit generate",
     "predev": "node scripts/prepare-client.mjs",
     "prebuild": "node scripts/prepare-client.mjs",
-    "check": "node --check app.js && node --check product.js && node --check ui.js && node --check views.js && node --check charts.js && node --check flows.js && node --check finance.js && node --check store.js && node --check sync.js && node --check sync-merge.js && node --check server-ledger.js && node --check pwa.js && node --check fx.js && node --check sw.js && node --check identity.js",
+    "check": "node --check app.js && node --check month-navigation.js && node --check product.js && node --check ui.js && node --check views.js && node --check charts.js && node --check flows.js && node --check finance.js && node --check store.js && node --check sync.js && node --check sync-merge.js && node --check server-ledger.js && node --check pwa.js && node --check fx.js && node --check sw.js && node --check identity.js",
     "test": "node --test charts.test.js audit.test.js finance.test.js product.test.js store.test.js pwa.test.js sync.test.js identity.test.js"
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^1.31.0",
+    "motion": "^14.9.1",
     "next": "16.3.4",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.6.7",

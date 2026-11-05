@@ -47,7 +47,6 @@ function tween(el,from,to,duration){
   requestAnimationFrame(step);
   setTimeout(finish,duration+80); // garantia: o texto exato é restaurado mesmo se os quadros forem pausados
 }
-function countUp(el){const target=parseBRL(el.textContent);if(target!==null&&target!==0)tween(el,0,target,900);}
 
 /* ---- transição de valores quando os dados mudam (mesma tela, mesmo mês) ---- */
 const labelOf=el=>{
@@ -81,7 +80,7 @@ function enter(){
   if(newPage)remember();else tweenChanged();
   if(reduced.matches)return;
   main.setAttribute('data-enter','');
-  if(newPage)main.querySelectorAll(COUNT_SELECTOR).forEach(countUp);
+  // Monetary amounts stay exact throughout navigation; no counting from zero.
   clearTimeout(enterTimer);
   enterTimer=setTimeout(()=>main.removeAttribute('data-enter'),1600);
 }
