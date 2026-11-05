@@ -49,3 +49,10 @@ button,input,select,textarea{font:inherit}button,a,input,select,textarea{touch-a
   .app-shell{padding-bottom:0}
   .toast,.update-banner{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 }
+
+/* One clearance for the bottom bar, without the desktop footer on mobile. */
+@media(max-width:959px){
+  .app-footer{display:none}
+  .main-shell{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+  #main-content>:last-child{margin-bottom:0}
+}
