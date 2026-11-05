@@ -66,3 +66,44 @@ export function donut(categories,total,{limit=5,cash=v=>esc(money(v))}={}){
 }
 
 export const dot=index=>`<i class="dot" style="background:var(--c${(index%DONUT_COLORS)+1})"></i>`;
+
+// ---- Visão geral 5.1 ----
+const pathOf=pts=>pts.map(([x,y],i)=>`${i?'L':'M'}${x.toFixed(2)} ${y.toFixed(2)}`).join('');
+const scaleY=(values,top=8,bottom=92)=>{const min=Math.min(...values),max=Math.max(...values),span=max-min||1;return v=>bottom-(v-min)/span*(bottom-top);};
+
+// Área do saldo no hero. `points` = [{date,value}]; `label(date)` e `cash(value)` formatam o tooltip.
+export function areaChart(points,{label=d=>d,cash=money}={}){
+  if(points.length<2)return '';
+  const values=points.map(p=>p.value),low=Math.min(...values),high=Math.max(...values),y=scaleY([...values,low-(high-low)*.35],6,96),pts=points.map((p,i)=>[i/(points.length-1)*100,y(p.value)]),line=pathOf(pts);
+  const step=Math.max(1,Math.ceil(points.length/40)),zones=points.map((p,i)=>i%step&&i!==points.length-1?'':`<span class="area-zone" style="left:${(i/(points.length-1)*100).toFixed(2)}%;--y:${pts[i][1].toFixed(2)}%" data-tip-title="${esc(label(p.date))}" data-tip="${esc(`Saldo::${cash(p.value)}`)}"></span>`).join('');
+  return `<div class="area"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs><linearGradient id="area-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--hero-accent)" stop-opacity=".16"/><stop offset="1" stop-color="var(--hero-accent)" stop-opacity="0"/></linearGradient></defs><path class="area-fill" d="${line}L100 100L0 100Z"/><path class="area-line" d="${line}" vector-effect="non-scaling-stroke"/></svg><span class="area-end" style="top:${pts.at(-1)[1].toFixed(2)}%" aria-hidden="true"></span><div class="area-zones" aria-hidden="true">${zones}</div></div>`;
+}
+
+// Linha mínima para os indicadores.
+export function miniLine(values){
+  if(values.length<2||!values.some(Boolean))return '';
+  const y=scaleY(values,10,90),line=pathOf(values.map((v,i)=>[i/(values.length-1)*100,y(v)]));
+  return `<svg class="mini-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path class="mini-fill" d="${line}L100 100L0 100Z"/><path class="mini-stroke" d="${line}" vector-effect="non-scaling-stroke"/></svg>`;
+}
+
+// Ritmo de gasto: acumulado do mês (linha cheia) contra o mês anterior inteiro (tracejada).
+export function paceChart({current,previous,days}){
+  const span=Math.max(days,previous.length),max=niceMax(Math.max(0,...current,...previous));
+  const pts=list=>list.map((v,i)=>[span>1?i/(span-1)*100:0,100-v/max*100]);
+  const now=pts(current),before=pts(previous);
+  const end=now.at(-1);
+  return `<div class="pace"><div class="pace-axis" aria-hidden="true"><span>${axisLabel(max)}</span><span>${axisLabel(max/2)}</span><span>R$ 0</span></div><div class="pace-plot"><div class="pace-grid" aria-hidden="true"><i></i><i></i><i></i></div><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">${before.length>1?`<path class="pace-before" d="${pathOf(before)}" vector-effect="non-scaling-stroke"/>`:''}${now.length>1?`<path class="pace-fill" d="${pathOf(now)}L${end[0].toFixed(2)} 100L0 100Z"/><path class="pace-now" d="${pathOf(now)}" vector-effect="non-scaling-stroke"/>`:''}</svg>${end?`<span class="pace-dot" style="left:${end[0].toFixed(2)}%;top:${end[1].toFixed(2)}%" aria-hidden="true"></span>`:''}</div><div class="pace-labels" aria-hidden="true"><span>dia 1</span><span>dia ${span}</span></div></div>`;
+}
+
+// Fluxo do mês numa barra só, como o "Armazenamento" do iPhone: cada categoria ocupa a sua fatia do que entrou
+// e o pedaço verde é o que sobrou. Se faltou dinheiro, a barra é o total gasto.
+const FLOW_TONES=['var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c7)'];
+export function flowChart(flow,{cash=v=>esc(money(v))}={}){
+  const total=Math.max(flow.income,flow.expense);
+  const parts=[...flow.targets.map((c,i)=>({...c,tone:c.other?'var(--c6)':FLOW_TONES[i%FLOW_TONES.length]})),...(flow.surplus?[{name:'Sobrou',total:flow.surplus,tone:'var(--sage)',special:true}]:[])].filter(p=>p.total>0);
+  if(!(total>0)||!parts.length)return '';
+  const share=v=>v/total*100,pct=v=>{const n=share(v);return n>0&&n<1?'<1%':`${Math.round(n)}%`;};
+  const bar=parts.map(p=>`<i style="flex-grow:${share(p.total).toFixed(3)};background:${p.tone}"></i>`).join('');
+  const legend=parts.map(p=>`<li${p.special?' class="special"':''}><i style="background:${p.tone}"></i><span>${esc(p.name)}</span><b>${cash(p.total)}</b><em>${pct(p.total)}</em></li>`).join('');
+  return `<div class="stack"><div class="stack-bar" aria-hidden="true">${bar}</div><ul class="stack-legend">${legend}</ul></div>`;
+}

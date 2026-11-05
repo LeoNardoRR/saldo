@@ -61,3 +61,14 @@ Todos os pares de texto/fundo medidos nos dois temas passam em 4,5 : 1 (varredur
 ## Acessibilidade
 
 Foco visível de 2 px, `aria-current` na navegação, `aria-pressed` em seletores, gráficos com equivalente textual, erros ligados ao campo por `aria-describedby`, `role=alert` em erros. Não se afirma certificação; VoiceOver/TalkBack e aparelhos físicos exigem homologação.
+
+## Camada iOS (ios.css)
+
+- Carrega depois de `theme.css` e redefine tokens e acabamento no estilo iOS/iPadOS.
+- Fonte do sistema (SF no Apple) via `--font-text` e `--font-display`; Manrope e DM Sans saíram dos estilos.
+- Fundo agrupado `#f2f2f7` (escuro `#000`), cartões brancos sem borda, cores de sistema acessíveis; o verde do Saldo segue como destaque.
+- Liquid Glass só na camada de navegação (barra de abas, barra lateral flutuante, botões do topo, barra de período ao rolar, menus e folhas); o conteúdo fica sólido. `fx.js` marca `:root[data-scrolled]`.
+- Tipografia leve: títulos em peso 600, valores grandes em 500, sem espaçamento negativo forte.
+- Cartão de saldo branco (escuro `#1c1c1e`) com linha fina do saldo, etiqueta de variação e seletor Mês/6M/12M em pílula.
+- "Para onde foi o dinheiro" é uma barra única no estilo Armazenamento do iPhone (`flowChart`): uma fatia por categoria, "Outras" em cinza e o que sobrou em verde, com legenda de valor e %.
+- Celular: barra de abas em cápsula de vidro, folhas de baixo para cima, controles segmentados, seleção redonda e interruptor em "Todos os períodos".
