@@ -114,3 +114,15 @@ export function refreshModal(api,render){const refresh=()=>{if(api.dialog.open)a
 export function confirmAction({title,message,label='Confirmar',danger=false,onConfirm}) {return modal({title,body:`<p>${esc(message)}</p>`,submit:label,onSubmit:async()=>{await onConfirm();},description:danger?'Revise o alcance desta alteração antes de confirmar.':''});}
 export function download(text,name,type='application/json') {const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 export function avatar(el,photo,name) {el.replaceChildren();if(photo){const image=document.createElement('img');image.src=photo;image.alt='Sua foto de perfil';el.append(image);}else el.textContent=name.trim()?name.trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toLocaleUpperCase('pt-BR'):'EU';}
+
+// ── Estrutura adaptada do Finmori (MIT © 2026 Finmori) ───────────────────────────────────────────
+// Origem: https://github.com/KhoaSuperman/Finmori-ReactNativeWeb @ d6a2da0 — ver licenses/finmori.txt.
+// Base: src/components/ui-kit/{BalanceCard,IncomeOutcomeTrendCard,SectionTitle,ActivityItem,Card,Chip,Typography}.tsx.
+// Mudanças: React Native/NativeWind viram marcação HTML; a geometria (raio, espaços, escala tipográfica) é aplicada
+// pelo bloco "Carteira" do premium.css com os tokens do Saldo. Sem texto em gradiente, sem arte de cartão, sem
+// botão de olho (o modo privacidade já existe no cabeçalho) e sem seta de tendência (o Saldo não tem esse dado).
+// Parâmetros terminados em Html (ou value/note) recebem marcação já escapada por quem chama.
+export const fmBalanceCard = ({label,value,note=''}) => `<section class="fm-balance" aria-label="${esc(label)}"><p class="fm-caption">${esc(label)}</p><strong class="fm-balance-value">${value}</strong>${note?`<small class="fm-note">${note}</small>`:''}</section>`;
+export const fmTrendCard = ({label,value,chip=''}) => `<section class="fm-trend" aria-label="${esc(label)}"><p class="fm-caption">${esc(label)}</p><strong class="fm-trend-value">${value}</strong>${chip?`<span class="fm-chip">${chip}</span>`:''}</section>`;
+export const fmSectionTitle = ({title,description='',cta=''}) => `<div class="fm-section-title"><div><h2>${esc(title)}</h2>${description?`<p>${esc(description)}</p>`:''}</div>${cta}</div>`;
+export const fmActivityItem = ({kind='',avatarHtml,labelHtml,overlineHtml,value,valueLabel,moreHtml='',notesHtml='',actionsHtml=''}) => `<article class="fm-activity ${esc(kind)}"><span class="fm-avatar">${avatarHtml}</span><div class="fm-activity-id"><h3>${labelHtml}</h3><small>${overlineHtml}</small></div><div class="fm-activity-amount"><strong class="fm-activity-value">${value}</strong><small>${esc(valueLabel)}</small></div>${moreHtml}${notesHtml?`<div class="fm-activity-notes">${notesHtml}</div>`:''}${actionsHtml?`<div class="fm-activity-actions">${actionsHtml}</div>`:''}</article>`;

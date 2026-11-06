@@ -1,0 +1,153 @@
+/* Layered effect/tint/shine adapted from dev-okazawa/liquid-glass-nav (MIT).
+ * See licenses/liquid-glass-nav.txt. Keep blur separate from filter/opacity:
+ * combining an SVG filter with backdrop-filter breaks the material on Safari.
+ */
+:root {
+  --mobile-nav-height:64px;
+  --mobile-nav-bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  --mobile-nav-clearance:calc(var(--mobile-nav-height) + var(--mobile-nav-bottom) + 16px);
+  --nav-glass-tint:rgb(250 249 255 / 8%);
+  --nav-glass-fallback:#f1eff8;
+  --nav-glass-edge:rgb(255 255 255 / 55%);
+  --nav-glass-sheen:rgb(255 255 255 / 42%);
+  --nav-glass-rim:rgb(255 255 255 / 85%);
+  --nav-glass-shadow:0 10px 30px -10px rgb(29 20 55 / 28%),0 1px 3px rgb(29 20 55 / 8%);
+  --nav-glass-lens:rgb(255 255 255 / 22%);
+  --nav-glass-lens-edge:rgb(255 255 255 / 65%);
+  --nav-icon-halo:rgb(255 255 255 / 85%);
+}
+:root[data-theme=dark] {
+  --nav-glass-tint:rgb(24 22 34 / 14%);
+  --nav-glass-fallback:#24212f;
+  --nav-glass-edge:rgb(255 255 255 / 16%);
+  --nav-glass-sheen:rgb(255 255 255 / 12%);
+  --nav-glass-rim:rgb(255 255 255 / 38%);
+  --nav-glass-shadow:0 10px 30px -10px rgb(0 0 0 / 60%);
+  --nav-glass-lens:rgb(230 220 255 / 10%);
+  --nav-glass-lens-edge:rgb(245 239 255 / 22%);
+  --nav-icon-halo:rgb(0 0 0 / 70%);
+}
+
+/* Specific namespace retires legacy dock/FAB styles without changing desktop. */
+:root .mobile-nav.liquid-nav {
+  display:none;
+  position:fixed;
+  inset:auto max(16px,env(safe-area-inset-right,0px)) var(--mobile-nav-bottom) max(16px,env(safe-area-inset-left,0px));
+  width:auto;
+  max-width:420px;
+  height:var(--mobile-nav-height);
+  margin-inline:auto;
+  padding:4px;
+  border:0;
+  border-radius:9999px;
+  background:transparent;
+  box-shadow:var(--nav-glass-shadow);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  isolation:auto;
+  z-index:30;
+}
+:root .mobile-nav.liquid-nav::before {display:none;content:none}
+.liquid-nav__effect,.liquid-nav__tint,.liquid-nav__shine {
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+}
+.liquid-nav__effect {
+  z-index:0;
+  background:var(--nav-glass-fallback);
+}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+  .liquid-nav__effect {
+    background:transparent;
+    -webkit-backdrop-filter:blur(4px) saturate(210%) brightness(1.06);
+    backdrop-filter:blur(4px) saturate(210%) brightness(1.06);
+  }
+  .liquid-nav__tint {background-color:var(--nav-glass-tint)}
+}
+.liquid-nav__tint {
+  z-index:1;
+  background-image:linear-gradient(160deg,rgb(255 255 255 / 8%),transparent 45%,rgb(126 98 201 / 4%));
+}
+.liquid-nav__shine {
+  z-index:2;
+  /* Specular rim brighter on top-left, softer bottom-right, plus a thin top sheen. */
+  border:.5px solid var(--nav-glass-edge);
+  background:linear-gradient(180deg,var(--nav-glass-sheen),transparent 55%);
+  box-shadow:inset 1px 1.5px 0 var(--nav-glass-rim),inset -1px -1px 0 rgb(255 255 255 / 12%),inset 0 0 14px rgb(255 255 255 / 8%);
+}
+.liquid-nav__content {
+  position:relative;
+  z-index:3;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  align-items:center;
+  height:100%;
+}
+:root .mobile-nav.liquid-nav .liquid-nav__item {
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  width:100%;
+  min-width:44px;
+  height:56px;
+  min-height:44px;
+  padding:4px 2px;
+  margin:0;
+  border:0;
+  border-radius:9999px;
+  color:var(--ink);
+  background:transparent;
+  box-shadow:none;
+  text-decoration:none;
+  font-size:10px;
+  font-weight:600;
+  line-height:1.2;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:color 160ms ease-out;
+}
+/* Clear glass shows busy content; a soft halo keeps icons legible on any backdrop. */
+.liquid-nav__item svg {flex:none;transition:transform 200ms ease-out;filter:drop-shadow(0 0 3px var(--nav-icon-halo))}
+/* Icon-only bar: labels stay in the DOM as accessible names but are visually hidden. */
+.liquid-nav__label {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+:root .mobile-nav.liquid-nav [aria-current=page] {color:var(--brand);font-weight:750;background:transparent}
+:root .mobile-nav.liquid-nav [aria-current=page]::before {content:none}
+:root .mobile-nav.liquid-nav .liquid-nav__create {color:var(--brand)}
+.liquid-nav__create svg {width:36px;height:36px;padding:6px;border-radius:50%;background:var(--brand);color:var(--brand-on)}
+:root .mobile-nav.liquid-nav .liquid-nav__item:focus-visible {outline:2px solid var(--brand);outline-offset:-3px}
+.liquid-nav__item[data-pressed=true] svg {transform:scale(.9)}
+@media (hover:hover) {:root .mobile-nav.liquid-nav .liquid-nav__item:hover {background:var(--brand-tint)}}
+.liquid-nav__indicator {position:absolute;top:0;left:0;pointer-events:none;z-index:0;padding:2px}
+.liquid-nav__lens {
+  width:100%;height:100%;border-radius:9999px;
+  background:var(--nav-glass-lens);
+  border:1px solid var(--nav-glass-lens-edge);
+  box-shadow:inset 0 1px 2px rgb(255 255 255 / 20%),0 2px 4px rgb(29 20 55 / 5%);
+}
+@media (max-width:959px) {
+  :root .mobile-nav.liquid-nav {display:block}
+  :root .mobile-nav.liquid-nav:empty {display:none}
+  :root .mobile-nav.liquid-nav[data-keyboard-open] {visibility:hidden;pointer-events:none}
+  .main-shell {padding-bottom:var(--mobile-nav-clearance)}
+  html {scroll-padding-bottom:var(--mobile-nav-clearance)}
+  .toast,.update-banner {bottom:calc(var(--mobile-nav-clearance) + 4px)}
+}
+@media (prefers-reduced-motion:reduce) {
+  :root .mobile-nav.liquid-nav .liquid-nav__item,.liquid-nav__item svg {transition:none}
+  .liquid-nav__item[data-pressed=true] svg {transform:none}
+}
+@media (prefers-reduced-transparency:reduce) {
+  .liquid-nav__effect {background:var(--nav-glass-fallback);-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+@media (forced-colors:active) {
+  :root .mobile-nav.liquid-nav {border:1px solid CanvasText}
+  .liquid-nav__effect {background:Canvas;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .liquid-nav__lens {border:2px solid Highlight}
+  :root .mobile-nav.liquid-nav [aria-current=page] {color:LinkText}
+}

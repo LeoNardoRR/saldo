@@ -5,8 +5,9 @@ import {dataState} from './sync-merge.js';
 import {bindMonthNavigation} from './month-navigation.js';
 import {today,money,filteredEntries} from './product.js';
 import {$,esc,icon,hydrateIcons,avatar,modal,action,download} from './ui.js';
-import {mountFinancialUI,unmountFinancialUI} from './financial-ui.js';
+import {mountFinancialUI,unmountFinancialUI,mountMobileNavigation} from './financial-ui.js';
 import {pages,pageMeta} from './views.js';
+import {resolveNavigationPage} from './navigation.js';
 import * as flows from './flows.js';
 
 hydrateIcons();
@@ -16,20 +17,20 @@ try{initialMonth=sessionStorage.getItem(workspace.monthKey)||'';}catch{}
 if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(initialMonth))initialMonth=today().slice(0,7);
 let preferences={};
 try{preferences=JSON.parse(workspace.storage.getItem('saldo.preferences.v4')||'{}');}catch{}
-const aliases={'accounts-section':'accounts',overview:'overview',transactions:'transactions',planning:'planning',accounts:'accounts',recurring:'recurring',settings:'settings'};
 const filterDefaults=()=>({query:'',type:'',account:'',category:'',status:'',allPeriods:false,basis:'reference',sort:'date',direction:-1,page:1,size:25});
-const ctx={workspace,state:null,month:initialMonth,page:aliases[location.hash.slice(1)]||'overview',preferences,filter:filterDefaults(),mobileFilters:false,selected:new Set(),categoryMode:'all',storageError:false,syncStatus:{kind:'busy',message:'Abrindo seu espaço…'}};
+const ctx={workspace,state:null,month:initialMonth,page:resolveNavigationPage(location.hash),preferences,filter:filterDefaults(),mobileFilters:false,selected:new Set(),categoryMode:'all',storageError:false,syncStatus:{kind:'busy',message:'Abrindo seu espaço…'}};
 ctx.cash=c=>ctx.preferences.hidden?'<span class="financial-value" aria-label="Valor oculto">••••</span>':`<span class="financial-value">${esc(money(c))}</span>`;
 ctx.setPreference=(key,value)=>{ctx.preferences[key]=value;try{workspace.storage.setItem('saldo.preferences.v4',JSON.stringify(ctx.preferences));}catch{};};
 const main=$('#main-content');
+const mobileNavigation=mountMobileNavigation($('#mobile-navigation'),ctx.page);
 let lastData='',firstCloud=true;
 
 function saveContext(){try{sessionStorage.setItem(workspace.monthKey,ctx.month);}catch{}}
 function updateHeader(){
   const [title,subtitle]=pageMeta[ctx.page];$('#page-title').textContent=title;$('#page-subtitle').textContent=subtitle;document.title=`${title} · Saldo`;
   monthNavigation.render();$('#period-control').hidden=ctx.page==='settings'||ctx.page==='recurring';
-  document.querySelectorAll('[data-page]').forEach(a=>{if(a.dataset.page===ctx.page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
-  const more=$('.mobile-nav [data-action=more]');if(['settings','recurring','planning'].includes(ctx.page))more.setAttribute('aria-current','page');else more.removeAttribute('aria-current');
+  document.querySelectorAll('[data-page]').forEach(a=>{if(a.closest('.liquid-nav'))return;if(a.dataset.page===ctx.page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  mobileNavigation.render(ctx.page);
   document.body.classList.toggle('values-hidden',Boolean(ctx.preferences.hidden));
   const privacy=$('#privacy-toggle');privacy.setAttribute('aria-label',ctx.preferences.hidden?'Mostrar valores':'Ocultar valores');privacy.title=privacy.getAttribute('aria-label');privacy.innerHTML=icon(ctx.preferences.hidden?'eye-off':'eye');
   if(ctx.state){const p=ctx.state.settings.profile;avatar($('#sidebar-avatar'),p.photo,p.name);avatar($('#header-profile'),p.photo,p.name);$('#profile-name').textContent=p.name||'Meu espaço';}
@@ -164,7 +165,7 @@ document.addEventListener('input',event=>{if(event.target.id==='search'){ctx.fil
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('details.row-menu[open]').forEach(x=>x.open=false);});
 document.addEventListener('keydown',event=>{if(event.key.toLowerCase()!=='n'||event.metaKey||event.ctrlKey||event.altKey||event.defaultPrevented)return;if(event.target.closest?.('input,textarea,select,[contenteditable]')||document.querySelector('dialog[open]')||!ctx.state)return;event.preventDefault();flows.entryForm(ctx);});
 document.addEventListener('click',event=>{document.querySelectorAll('details.row-menu[open]').forEach(x=>{if(!x.contains(event.target))x.open=false;});});
-window.addEventListener('hashchange',()=>{const page=aliases[location.hash.slice(1)]||'overview';ctx.navigate(page);document.querySelectorAll('dialog:not(#install-dialog)').forEach(d=>{if(d.querySelector('a[href^="#"]'))d.close();});});
+window.addEventListener('hashchange',()=>{const page=resolveNavigationPage(location.hash);ctx.navigate(page);document.querySelectorAll('dialog:not(#install-dialog)').forEach(d=>{if(d.querySelector('a[href^="#"]'))d.close();});});
 $('#add').onclick=()=>flows.entryForm(ctx);
 $('#profile-open').onclick=()=>flows.profileForm(ctx);
 $('#header-profile').onclick=()=>flows.profileForm(ctx);

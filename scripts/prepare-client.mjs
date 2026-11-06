@@ -1,10 +1,12 @@
 import {cp,rm,mkdir,readFile,writeFile,readdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-const files=['app.js','month-navigation.js','product.js','ui.js','views.js','charts.js','flows.js','finance.js','store.js','sync.js','sync-merge.js','identity.js','pwa.js','sw.js','fonts.css','style.css','theme.css','ios.css','premium.css','fx.js','manifest.webmanifest'];
+const files=['app.js','navigation.js','month-navigation.js','product.js','ui.js','views.js','charts.js','flows.js','finance.js','store.js','sync.js','sync-merge.js','identity.js','pwa.js','sw.js','fonts.css','style.css','theme.css','ios.css','premium.css','fx.js','manifest.webmanifest'];
 await rm('public',{recursive:true,force:true});await mkdir('public',{recursive:true});
 const hash=createHash('sha256');hash.update(await readFile('index.html'));
 for(const file of files){hash.update(file);hash.update(await readFile(file));await cp(file,`public/${file}`)}
 await cp('assets','public/assets',{recursive:true});
+// Preserve upstream notices in the distributed static assets as well as source.
+await cp('licenses','public/licenses',{recursive:true});
 async function hashAssets(dir){for(const entry of (await readdir(dir,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))){const path=`${dir}/${entry.name}`;if(entry.isDirectory())await hashAssets(path);else{hash.update(path);hash.update(await readFile(path));}}}
 await hashAssets('assets');
 // Bundle React reading surfaces separately; the financial engine stays unchanged.

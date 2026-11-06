@@ -1,0 +1,23 @@
+/* Paleta e encaixes dos componentes adaptados do Shadcn Fintech (MIT, ver licenses/shadcn-fintech.txt). */
+:root,:root[data-theme=light]{
+ --fintech-chart-1:#6242ca;--fintech-chart-2:#1f8a8a;--fintech-chart-3:#c98a1b;
+ --fintech-chart-4:#c2457a;--fintech-chart-5:#3a6fd8;--fintech-chart-6:#9a97ab;
+}
+:root[data-theme=dark]{
+ --fintech-chart-1:#beacff;--fintech-chart-2:#6fd0cf;--fintech-chart-3:#e8be6a;
+ --fintech-chart-4:#f08ab4;--fintech-chart-5:#8fb3ff;--fintech-chart-6:#8f8ca3;
+}
+.fintech-slot:empty{display:none}
+.fintech-slot{grid-column:1/-1;min-width:0}
+.fintech-analysis,.fintech-planning{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+.fintech-planning{margin-bottom:20px}
+.fintech-tiles{margin-bottom:16px}
+.panel.fintech-card{padding:22px;gap:16px;min-width:0}
+.fintech-card h2,.fintech-card h3{color:var(--ink)}
+.fintech-heatmap svg rect{outline:none}
+@media(min-width:960px){
+ .fintech-analysis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .fintech-planning{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
+ .fintech-analysis>:only-child,.fintech-planning>:only-child{grid-column:1/-1}
+}
+@media(max-width:959px){.panel.fintech-card{padding:18px}.fintech-analysis,.fintech-planning{gap:16px}.fintech-planning{margin-bottom:16px}}

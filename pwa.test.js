@@ -31,3 +31,9 @@ test('Atualização emite persistência do contexto antes de ativar o novo worke
   const h=updateHarness(false);vm.runInNewContext(await readFile('pwa.js','utf8'),h.context);await new Promise(resolve=>setImmediate(resolve));
   h.elements.get('#apply-update').handlers.click();assert.deepEqual(h.events,['saldo:before-update']);assert.equal(h.posted[0].type,'SKIP_WAITING');
 });
+
+
+test('Cache offline inclui a configuração de navegação mobile',async()=>{
+ const w=worker();let installed;w.listeners.install({waitUntil:p=>installed=p});await installed;
+ assert.ok(w.network.includes('https://saldo.test/navigation.js'));
+});

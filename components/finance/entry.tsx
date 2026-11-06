@@ -9,13 +9,33 @@ import {Badge} from '@/components/ui/badge';
 import {ChartContainer} from '@/components/ui/chart';
 import {BarChart,Bar,XAxis,YAxis,CartesianGrid,Tooltip} from 'recharts';
 import {Table,TableHeader,TableBody} from '@/components/ui/table';
-import {BarList} from './vendor/BarList';
 import {AnimatedBackground} from './vendor/animated-background';
 import {accountBalance,invoice} from '../../finance.js';
-import {today,dateLabel,money,categoryTotals,moneyFlow} from '../../product.js';
+import {today,dateLabel,money,moneyFlow} from '../../product.js';
+import {CategoryDonut} from '../fintech/category-donut';
+import {MonthComparison} from '../fintech/month-comparison';
+import {SpendingHeatmap} from '../fintech/spending-heatmap';
+import {BudgetRings} from '../fintech/budget-rings';
+import {MonthProjection} from '../fintech/month-projection';
+import {SavingsGoals} from '../fintech/savings-goals';
+import {TransactionSummary} from '../fintech/transaction-summary';
+import type {FintechContext} from '../fintech/shared';
 import './utilities.css';
+import {FloatingLiquidGlassNav} from '../navigation/floating-liquid-glass-nav';
+import {bindNavigationViewport} from '../../navigation.js';
 
-type Context={state:Parameters<typeof moneyFlow>[0];month:string;preferences:{hidden?:boolean};categoryMode:string;categoryExpanded?:boolean;overviewSection?:string};
+// A separate persistent root: financial re-renders must not reset the lens/focus.
+export function mountMobileNavigation(target:HTMLElement,page:string){
+ const root=createRoot(target);
+ let current='';
+ const render=(next:string)=>{if(current===next)return;current=next;flushSync(()=>root.render(<MotionConfig reducedMotion="user"><FloatingLiquidGlassNav page={next}/></MotionConfig>));};
+ const cleanup=bindNavigationViewport(target);
+ render(page);
+ return {render,destroy(){cleanup();root.unmount();}};
+}
+
+
+type Context=FintechContext&{state:Parameters<typeof moneyFlow>[0];overviewSection?:string};
 const roots:Root[]=[];
 export function unmountFinancialUI(){for(const root of roots)root.unmount();roots.length=0;}
 function mount(target:Element|null,node:React.ReactNode){if(!target)return;const root=createRoot(target);roots.push(root);flushSync(()=>root.render(<MotionConfig reducedMotion="user">{node}</MotionConfig>));}
@@ -26,13 +46,6 @@ function WalletDeck({ctx}:{ctx:Context}){
  const Icon=credit?CreditCard:account.type==='cash'?Wallet:Landmark;
  return <li key={account.id} className="wallet-item"><Card className={`finance-account tone-${index%3}`}><CardHeader><div className="account-heading"><Icon size={20} aria-hidden/><Badge variant="outline">{credit?'Crédito':account.type==='cash'?'Carteira':'Conta'}</Badge></div><CardTitle>{account.name}</CardTitle><CardDescription>{credit?`Fatura em aberto · vence ${dateLabel(bill!.dueDate)}`:'Saldo da conta'}</CardDescription></CardHeader><CardContent><strong className="wallet-card-value">{ctx.preferences.hidden?'••••':money(value)}</strong></CardContent><CardFooter><Button variant="ghost" data-action={credit?'invoice':'filter-account'} data-id={credit?account.id:account.name} aria-label={`${account.name}: ${credit?'ver fatura':'ver registros'}`}>{credit?'Ver fatura':'Ver registros'}<ArrowUpRight size={16} aria-hidden/></Button></CardFooter></Card></li>;
  })}</ul>{ctx.state.accounts.length>1&&<p className="wallet-hint">Deslize para ver suas contas e cartões</p>}</section>;
-}
-function CategoryDistribution({ctx}:{ctx:Context}){
- const data=categoryTotals(ctx.state,ctx.month,ctx.categoryMode).slice(0,ctx.categoryExpanded?undefined:6).map(item=>({name:item.name,value:item.total}));
- return <div className="finance-island tremor-distribution"><BarList data={data} valueFormatter={money} onValueChange={item=>{
- // Preserve the existing delegated navigation, filter and action contract.
- const button=document.createElement('button');button.dataset.action='filter-category';button.dataset.id=item.name;button.hidden=true;document.body.append(button);button.click();button.remove();
- }}/></div>;
 }
 function FlowComparison({ctx}:{ctx:Context}){
  const flow=moneyFlow(ctx.state,ctx.month,4),data=[{name:'Receitas',value:flow.income},{name:'Despesas',value:flow.expense}];
@@ -50,8 +63,14 @@ export function mountFinancialUI(ctx:Context){
  // Keep privacy mode free of numeric series, tooltip data and bar widths.
  if(ctx.preferences.hidden)return;
  if(!ctx.state.settings.budgets?.some(b=>b.month===ctx.month)){
- const list=document.querySelector('.cat-bars');if(list){const host=document.createElement('div');list.replaceWith(host);mount(host,<CategoryDistribution ctx={ctx}/>);}
+ const list=document.querySelector('.cat-bars');if(list){const host=document.createElement('div');list.replaceWith(host);mount(host,<CategoryDonut ctx={ctx}/>);}
  }
  const flow=document.querySelector('.panel-flow .stack');
  if(flow){const host=document.createElement('div');flow.before(host);mount(host,<FlowComparison ctx={ctx}/>);}
+ // Componentes adaptados do Shadcn Fintech (MIT): cada ponto de montagem é opcional e some se não houver dados reais.
+ const slot=(name:string)=>document.querySelector<HTMLElement>(`[data-fintech="${name}"]`);
+ const transactionsSlot=slot('tx-summary');if(transactionsSlot)mount(transactionsSlot,<TransactionSummary ctx={ctx}/>);
+ const analysisSlot=slot('analysis');if(analysisSlot)mount(analysisSlot,<><MonthComparison ctx={ctx}/><SpendingHeatmap ctx={ctx}/></>);
+ const planningSlot=slot('planning');if(planningSlot)mount(planningSlot,<><BudgetRings ctx={ctx}/><MonthProjection ctx={ctx}/></>);
+ const goals=document.querySelector<HTMLElement>('.goal-list');if(goals)mount(goals,<SavingsGoals ctx={ctx}/>);
 }

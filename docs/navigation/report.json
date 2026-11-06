@@ -1,0 +1,62 @@
+{
+  "checks": [
+    "320px/light: all six routes, touch targets, overflow, last content",
+    "320px/dark: all six routes, touch targets, overflow, last content",
+    "393px/light: all six routes, touch targets, overflow, last content",
+    "393px/dark: all six routes, touch targets, overflow, last content",
+    "402px/light: all six routes, touch targets, overflow, last content",
+    "402px/dark: all six routes, touch targets, overflow, last content",
+    "430px/light: all six routes, touch targets, overflow, last content",
+    "430px/dark: all six routes, touch targets, overflow, last content",
+    "Real links, history back/forward and refresh",
+    "Original More menu, secondary route selection and creation modal",
+    "Legacy deep link",
+    "Desktop sidebar retained, capsule hidden",
+    "Landscape viewport",
+    "Keyboard viewport simulation, inert and cleanup",
+    "Reduced motion",
+    "Opaque accessible fallback without backdrop blur",
+    "Spring indicator moves and settles over the route-selected item",
+    "Accessibility tree labels, keyboard tab order and visible focus",
+    "PWA cached shell and navigation work offline",
+    "Translucent surface with real backdrop blur"
+  ],
+  "writes": 0,
+  "errors": [],
+  "geometry": {
+    "x": 16,
+    "y": 802,
+    "width": 370,
+    "height": 64,
+    "bottom": 8,
+    "display": "block",
+    "radius": "9999px",
+    "background": "rgba(0, 0, 0, 0)",
+    "blur": "blur(16px) saturate(1.55)",
+    "overflow": false,
+    "targets": [
+      {
+        "w": 72,
+        "h": 56
+      },
+      {
+        "w": 72,
+        "h": 56
+      },
+      {
+        "w": 72,
+        "h": 56
+      },
+      {
+        "w": 72,
+        "h": 56
+      },
+      {
+        "w": 72,
+        "h": 56
+      }
+    ],
+    "active": "overview",
+    "lens": true
+  }
+}

@@ -1,10 +1,17 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+@import "../fintech/fintech.css";
 @source "../ui";
 @source "./";
+@source "../fintech";
 @theme inline {
  --color-card:var(--surface);--color-card-foreground:var(--ink);
  --color-primary:var(--brand);--color-primary-foreground:var(--brand-on);
  --color-muted-foreground:var(--muted);--color-border:var(--line);
  --color-background:var(--surface);--color-accent:var(--fill);--color-accent-foreground:var(--ink);--color-ring:var(--brand);
+ /* Tokens usados pelos componentes adaptados do Shadcn Fintech, ligados ao tema do Saldo. */
+ --color-foreground:var(--ink);--color-muted:var(--surface-soft);--color-destructive:var(--danger);
+ --color-success:var(--success);--color-warning:var(--warning);
+ --color-chart-1:var(--fintech-chart-1);--color-chart-2:var(--fintech-chart-2);--color-chart-3:var(--fintech-chart-3);
+ --color-chart-4:var(--fintech-chart-4);--color-chart-5:var(--fintech-chart-5);--color-chart-6:var(--fintech-chart-6);
 }
