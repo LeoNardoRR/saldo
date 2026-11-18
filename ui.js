@@ -30,6 +30,7 @@ const paths={
   'eye-off':'<path d="m3 3 18 18M10 5h2c7 0 10 7 10 7a18 18 0 0 1-4 5M6 6a19 19 0 0 0-4 6s3 7 10 7a12 12 0 0 0 5-1"/>',
   search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
   check:'<path d="m5 12 4 4 10-10"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-13 5h2m4 0h2"/>',
   alert:'<path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v4M12 17h.01"/>',
   card:'<rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 9h20M6 15h4"/>',
   bank:'<path d="m3 7 9-4 9 4H3ZM5 9v9M10 9v9M14 9v9M19 9v9M3 21h18"/>',
@@ -64,7 +65,6 @@ export function categoryIcon(name='') {
   return `<span class="ss-squircle" style="--sq-bg:${bg}" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">${svgPath}</svg></span>`;
 }
 
-export const ssCheck = (on=true,pending=false) => `<span class="ss-check" ${on?'data-on':''} ${pending?'data-pending':''} aria-hidden="true"><svg viewBox="0 0 16 16" width="18" height="18"><circle class="ss-check__ring" cx="8" cy="8" r="6.5"/><circle class="ss-check__arc" cx="8" cy="8" r="6.5" pathLength="1"/><circle class="ss-check__fill" cx="8" cy="8" r="7.25"/><path class="ss-check__tick" d="M5.2 8.2 7.1 10.1 10.9 5.9" pathLength="1"/></svg></span>`;
 export function hydrateIcons(root=document) {root.querySelectorAll('[data-icon]').forEach(el=>{el.innerHTML=icon(el.dataset.icon);delete el.dataset.icon;});}
 export const action = (name,label,{id='',cls='button secondary',iconName='',extra=''}={}) => `<button type="button" class="${esc(cls)}" data-action="${esc(name)}" ${id?`data-id="${esc(id)}"`:''} ${extra}>${iconName?icon(iconName):''}${esc(label)}</button>`;
 export const badge = (label,kind='neutral') => `<span class="badge ${esc(kind)}">${esc(label)}</span>`;

@@ -78,11 +78,48 @@ export const smoothPath=pts=>pts.map(([x,y],i)=>{
 const scaleY=(values,top=8,bottom=92)=>{const min=Math.min(...values),max=Math.max(...values),span=max-min||1;return v=>bottom-(v-min)/span*(bottom-top);};
 
 // Área do saldo no hero. `points` = [{date,value}]; `label(date)` e `cash(value)` formatam o tooltip.
-export function areaChart(points,{label=d=>d,cash=money,id='area-fill'}={}){
+export function areaChart(points,{label=d=>d,cash=money,id='area-fill',ticks=[]}={}){
   if(points.length<2)return '';
-  const values=points.map(p=>p.value),low=Math.min(...values),high=Math.max(...values),y=scaleY([...values,low-(high-low)*.35],6,96),pts=points.map((p,i)=>[i/(points.length-1)*100,y(p.value)]),line=smoothPath(pts);
-  const step=Math.max(1,Math.ceil(points.length/40)),zones=points.map((p,i)=>i%step&&i!==points.length-1?'':`<span class="area-zone" style="left:${(i/(points.length-1)*100).toFixed(2)}%;--y:${pts[i][1].toFixed(2)}%" data-tip-title="${esc(label(p.date))}" data-tip="${esc(`Saldo::${cash(p.value)}`)}"></span>`).join('');
-  return `<div class="area"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs><linearGradient id="${esc(id)}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--hero-accent)" stop-opacity=".44"/><stop offset="1" stop-color="var(--hero-accent)" stop-opacity="0"/></linearGradient></defs><path class="area-fill" style="fill:url(#${esc(id)})" d="${line}L100 100L0 100Z"/><path class="area-line" d="${line}" vector-effect="non-scaling-stroke"/></svg><span class="area-end" style="top:${pts.at(-1)[1].toFixed(2)}%" aria-hidden="true"></span><div class="area-zones" aria-hidden="true">${zones}</div></div>`;
+  const values=points.map(p=>p.value),low=Math.min(...values),high=Math.max(...values);
+  const y=ticks.length?scaleY(ticks,10,90):scaleY([...values,low-(high-low)*.35],6,96);
+  const dates=[...new Set(points.map(point=>point.date))];
+  const positions=new Map(dates.map((date,i)=>[date,i*100/Math.max(1,dates.length-1)]));
+  const pts=points.map(p=>[positions.get(p.date),y(p.value)]);
+  const split=points.findIndex(p=>p.projected);
+  const actual=split<0?pts:pts.slice(0,split);
+  const forecast=split<0?[]:pts.slice(Math.max(0,split-1));
+  const line=actual.length?smoothPath(actual):'';
+  const forecastLine=forecast.length?`M${forecast[0].join(' ')}`+forecast.slice(1).map(([x,y])=>`H${x}V${y}`).join(''):'';
+  const grid=ticks.map(value=>`<line class="area-grid${value===0?' area-grid-zero':''}" x1="0" x2="100" y1="${y(value)}" y2="${y(value)}" vector-effect="non-scaling-stroke"/>`).join('');
+  const step=Math.max(1,Math.ceil(points.length/40));
+  const zones=points.map((p,i)=>{
+    const next=points[i+1];
+    if(next?.date===p.date || (i%step&&i!==points.length-1)) return '';
+    const previous=points[i-1];
+    const tip=p.projected?`${previous?.date===p.date?`Realizado::${cash(previous.value)}||`:''}Projetado::${cash(p.value)}`:`Saldo::${cash(p.value)}`;
+    return `<span class="area-zone" style="left:${pts[i][0].toFixed(2)}%;--y:${pts[i][1].toFixed(2)}%" data-tip-title="${esc(label(p.date))}" data-tip="${esc(tip)}"></span>`;
+  }).join('');
+  return `<div class="area"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs><linearGradient id="${esc(id)}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--hero-accent)" stop-opacity=".44"/><stop offset="1" stop-color="var(--hero-accent)" stop-opacity="0"/></linearGradient></defs>${grid}${line?`<path class="area-fill" style="fill:url(#${esc(id)})" d="${line}L${actual.at(-1)[0]} 100L0 100Z"/><path class="area-line" d="${line}" vector-effect="non-scaling-stroke"/>`:''}${forecastLine?`<path class="area-projected" d="${forecastLine}" vector-effect="non-scaling-stroke"/>`:''}</svg><span class="area-end${forecast.length?' area-end-projected':''}" style="top:${pts.at(-1)[1].toFixed(2)}%" aria-hidden="true"></span><div class="area-zones" aria-hidden="true">${zones}</div></div>`;
+}
+
+// Escala monetária do resumo, com espaço para séries constantes e variações pequenas.
+export function balanceChart(points,{label=d=>d,shortDate=label}={}){
+  if(points.length<2)return '';
+  const values=points.map(point=>point.value);
+  const low=Math.min(...values),high=Math.max(...values);
+  const rough=Math.max(100,(high-low)/3),magnitude=10**Math.floor(Math.log10(rough));
+  const step=([1,2,2.5,5,10].find(multiplier=>multiplier*magnitude>=rough)??10)*magnitude;
+  const bottom=Math.floor(low/step)*step-(low===high?step:0);
+  const top=Math.ceil(high/step)*step+(low===high&&low%step===0?step:0);
+  const ticks=Array.from({length:Math.round((top-bottom)/step)+1},(_,i)=>top-i*step);
+  const compact=new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:2});
+  const compactLabels=ticks.map(value=>`R$ ${compact.format(value/100)}`);
+  const labels=new Set(compactLabels).size===ticks.length?compactLabels:ticks.map(money);
+  const first=points[0],last=points.at(-1);
+  const dates=[...new Set(points.map(point=>point.date))];
+  const datePositions=dates.length>2?[0,Math.floor(dates.length/2),dates.length-1]:[0,dates.length-1];
+  const description=`Evolução do saldo de ${label(first.date)} a ${label(last.date)}. Início: ${money(first.value)}. ${last.projected?'Final projetado':'Final'}: ${money(last.value)}. Mínimo: ${money(low)}. Máximo: ${money(high)}.`;
+  return `<div class="balance-figure" role="img" aria-label="${esc(description)}">${areaChart(points,{label,id:'summary-balance-fill',ticks})}<div class="balance-scale" aria-hidden="true">${labels.map((value,i)=>`<span style="top:${10+i*80/(labels.length-1)}%">${esc(value)}</span>`).join('')}</div><div class="balance-dates" aria-hidden="true">${datePositions.map(index=>`<span style="left:${index*100/Math.max(1,dates.length-1)}%">${esc(shortDate(dates[index]))}</span>`).join('')}</div></div>`;
 }
 
 // Linha mínima para os indicadores.

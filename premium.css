@@ -194,9 +194,8 @@ p, li, dd, small, .helper {
 }
 ::selection { background: var(--brand); color: #fff; }
 
-/* ── 2. Stageshow Squircle Icons & Animated Checkmarks (Check.css) ───────── */
-.ss-squircle,
-.hg-app-icon {
+/* ── 2. Category Squircle Icons ───────── */
+.ss-squircle {
   display: inline-grid;
   place-items: center;
   width: 36px;
@@ -210,8 +209,7 @@ p, li, dd, small, .helper {
     inset 0 1px 0 rgba(255, 255, 255, 0.32),
     0 6px 14px -8px rgba(0, 0, 0, 0.45);
 }
-.ss-squircle svg,
-.hg-app-icon svg {
+.ss-squircle svg {
   width: 19px;
   height: 19px;
   color: #ffffff;
@@ -238,66 +236,6 @@ p, li, dd, small, .helper {
   width: 16px;
   height: 16px;
 }
-
-/* Stageshow Animated Checkmark (Check.css) */
-@keyframes ss-spin {
-  to { transform: rotate(360deg); }
-}
-.ss-check {
-  display: inline-grid;
-  flex-shrink: 0;
-  place-items: center;
-}
-.ss-check svg { overflow: visible; }
-.ss-check__ring {
-  fill: none;
-  stroke: var(--line-strong);
-  stroke-width: 1.5;
-  transition: opacity 0.2s ease;
-}
-.ss-check__arc {
-  fill: none;
-  stroke: var(--brand);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-dasharray: 0.28 1;
-  opacity: 0;
-  transform-origin: 8px 8px;
-  animation: ss-spin 0.9s linear infinite;
-  transition: opacity 0.18s ease;
-}
-.ss-check[data-pending] .ss-check__arc { opacity: 1; }
-.ss-check__fill {
-  fill: #22c55e;
-  opacity: 0;
-  transform: scale(0.35);
-  transform-origin: 8px 8px;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-.ss-check[data-on] .ss-check__fill {
-  opacity: 1;
-  transform: scale(1);
-  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), opacity 0s;
-}
-.ss-check[data-on] .ss-check__ring,
-.ss-check[data-on] .ss-check__arc { opacity: 0; }
-.ss-check__tick {
-  fill: none;
-  stroke: #ffffff;
-  stroke-width: 1.85;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  opacity: 0;
-}
-.ss-check[data-on] .ss-check__tick {
-  stroke-dashoffset: 0;
-  opacity: 1;
-  transition: stroke-dashoffset 0.34s cubic-bezier(0.65, 0, 0.35, 1) 0.14s, opacity 0.01s 0.14s;
-}
-.kpi-out .ss-check[data-on] .ss-check__fill { fill: #3b82f6; }
-.kpi-late .ss-check__arc { stroke: #ef4444; }
 
 /* ── 3. Interactive Controls & Contextual Theme Icon Cross-Fade ──────────── */
 button, input, select, textarea { font: inherit; }
@@ -695,114 +633,30 @@ input, select, textarea { accent-color: var(--brand); caret-color: var(--brand);
 /* ==========================================================================
    8. STAGESHOW HERO-GRID BENTO TILES (#overview-summary)
    Exact implementation of Benji Taylor's stageshow/examples/hero-grid:
-   - Tile 1: Revenue on Glass (stepped sunset/violet aurora + frosted window chrome)
+   - Tile 1: Saldo e histórico
    - Tile 2: Low Tide Sunset Artwork Player Card (.hg-player-card)
-   - Tile 3: Drafting Sheet with 16px architectural grid & animated ssCheck (.hg-draft-kpis)
-   - Tile 4: Squircle App Icons + 3D Keycaps (.hg-quick-dock)
+   - Tile 3: Drafting Sheet with 16px architectural grid (.hg-draft-kpis)
+   - Tile 4: Quick actions (.hg-quick-dock)
    ========================================================================== */
 .dash { position: relative; isolation: isolate; }
 .dash::before { display: none !important; }
 
-/* Tile 1: Revenue on Glass (grid.css line 291 + window.css chrome="glass") */
-#overview-summary .hero.ss-revenue-stage,
-.hero.ss-revenue-stage {
-  --hero-accent: #5b5bf6;
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
+/* Saldo e histórico */
+#overview-summary .hero.balance-hero {
+  --hero-accent: var(--brand);
+  --hero-ink: var(--brand);
   display: flex;
   flex-direction: column;
+  min-width: 0;
   min-height: 0;
-  padding: 18px 18px 0;
-  border: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
   border-radius: 22px;
-  background: radial-gradient(
-    circle at 104% 108%,
-    #ff5b2e 0 22%,
-    #ff8a3d 22% 36%,
-    #ffb547 36% 50%,
-    #ffd9a0 50% 63%,
-    #c8bdff 63% 77%,
-    #8b7bff 77% 91%,
-    #5b5bf6 91%
-  );
-  box-shadow: var(--shadow-border);
-}
-#overview-summary .hero::before { display: none; }
-
-/* Frosted Glass Browser Window inside the Aurora Stage */
-.ss-window-glass {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  background: rgba(248, 250, 253, 0.38);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  backdrop-filter: blur(14px) saturate(160%);
-  border-radius: 16px 16px 0 0;
-  padding: 0 6px 0;
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.48),
-    0 15px 35px rgba(23, 23, 23, 0.14);
-}
-:root[data-theme=dark] .ss-window-glass {
-  background: rgba(20, 21, 28, 0.48);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.22),
-    0 18px 40px rgba(0, 0, 0, 0.45);
-}
-.ss-window-bar {
-  display: grid;
-  grid-template-columns: 1fr minmax(0, 220px) 1fr;
-  align-items: center;
-  gap: 10px;
-  height: 36px;
-  padding: 0 14px;
-}
-.ss-lights {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.ss-lights i {
-  display: block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.65);
-}
-.ss-window-url {
-  grid-column: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  height: 22px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.45);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
-  color: #364152;
-  font: 600 10.5px/1 var(--font-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-:root[data-theme=dark] .ss-window-url {
-  background: rgba(255, 255, 255, 0.16);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  color: #f3f4f6;
-}
-/* Inner Page Card inset 6px inside the Frosted Frame */
-.ss-window-page {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
   background: var(--surface);
   color: var(--ink);
-  border-radius: 11px 11px 0 0;
-  padding: 18px 18px 0;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: none;
 }
+#overview-summary .hero::before { display: none; }
 
 #overview-summary .hero-top {
   display: flex;
@@ -836,7 +690,7 @@ input, select, textarea { accent-color: var(--brand); caret-color: var(--brand);
 }
 #overview-summary .hero .seg button {
   position: relative;
-  min-height: 26px;
+  min-height: 34px;
   min-width: 38px;
   padding: 0 10px;
   border-radius: 8px;
@@ -851,12 +705,11 @@ input, select, textarea { accent-color: var(--brand); caret-color: var(--brand);
   color: var(--brand);
   box-shadow: none;
 }
-.ss-revenue-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px 12px;
-  margin-top: 12px;
+.balance-head {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  margin-top: 10px;
 }
 #overview-summary .hero .hero-amount {
   display: inline-block;
@@ -889,55 +742,110 @@ input, select, textarea { accent-color: var(--brand); caret-color: var(--brand);
   background: var(--danger-bg);
   color: var(--danger);
 }
-#overview-summary .hero .hero-chart {
+#overview-summary .hero .balance-history {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.balance-history-head {
   display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-  margin: 12px -18px 0;
-}
-#overview-summary .hero .hero-chart .area {
-  flex: none;
-  height: 108px;
-  min-height: 108px;
-}
-#overview-summary .hero .area-line {
-  stroke: #5b5bf6;
-  stroke-width: 2.25;
-}
-#overview-summary .hero .area-fill { opacity: 0.25; }
-#overview-summary .hero .area-end {
-  background: #5b5bf6;
-  border: 2px solid var(--surface);
-  box-shadow: 0 0 0 3px rgba(91, 91, 246, 0.25);
-}
-#overview-summary .hero .area-zone::before { background: var(--line-strong); }
-#overview-summary .hero .hero-axis {
-  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
+  gap: 8px 12px;
+}
+.balance-history-head h3 {
   margin: 0;
-  padding: 6px 18px 12px;
-  font: 500 11px/1 var(--font-text);
+  font: 650 13px/1.2 var(--font-text);
+  color: var(--ink);
+}
+.balance-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  margin: 6px 0 0;
+  font: 600 10.5px/1.2 var(--font-text);
+  font-variant-numeric: tabular-nums;
   color: var(--muted);
 }
+.balance-figure .area {
+  min-height: 130px;
+  height: clamp(130px, 36vw, 160px);
+}
+.balance-figure .area-grid {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+.balance-figure .area-grid-zero {
+  stroke: var(--muted);
+  stroke-dasharray: none;
+}
+#overview-summary .hero .balance-figure .area-line { stroke-width: 2.5; }
+#overview-summary .hero .balance-figure .area-fill { opacity: .44; }
+.balance-figure .area-projected {
+  fill: none;
+  stroke: var(--hero-accent);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.balance-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 8px;
+  color: var(--secondary);
+  font: 600 11px/1.3 var(--font-text);
+}
+.balance-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.balance-legend i {
+  width: 16px;
+  border-top: 2px solid var(--hero-accent);
+}
+.balance-legend i.projected { border-top-style: dashed; }
+#overview-summary .hero .balance-figure .area-end {
+  width: 9px;
+  height: 9px;
+  margin: -4.5px -4.5px 0 0;
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--hero-accent);
+}
+#overview-summary .hero .balance-figure .area-end-projected { background: var(--surface); }
+.balance-scale { position: relative; text-align: right; }
+.balance-scale span {
+  position: relative;
+  display: block;
+  height: 0;
+  transform: translateY(-.6em);
+  white-space: nowrap;
+}
+.balance-dates {
+  position: relative;
+  min-height: 14px;
+  margin-top: 2px;
+}
+.balance-dates span {
+  position: absolute;
+  translate: -50% 0;
+}
+.balance-dates span:first-child { translate: 0 0; }
+.balance-dates span:last-child { translate: -100% 0; }
 #overview-summary .hero .hero-accounts { display: none; }
 @media (min-width: 960px) {
-  #overview-summary .hero .hero-chart {
-    margin-top: auto;
-  }
-  #overview-summary .hero .hero-chart .area {
-    flex: 1 1 auto;
-    height: 185px;
-    min-height: 160px;
-    max-height: 210px;
-  }
+  .balance-figure .area { height: 184px; }
   #overview-summary .hero .hero-accounts {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    margin: 0 -18px;
-    padding: 12px 18px 14px;
+    margin: 16px -20px -20px;
+    padding: 12px 20px 14px;
     border-top: 1px solid var(--line);
     background: var(--surface-2);
   }
@@ -1198,13 +1106,16 @@ input, select, textarea { accent-color: var(--brand); caret-color: var(--brand);
   min-height: 22px;
 }
 #overview-summary .kpis.hg-draft-kpis .kpi-icon {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  background: transparent;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 8px;
   border: 0;
   padding: 0;
+}
+#overview-summary .kpis.hg-draft-kpis .kpi-icon .icon {
+  width: 14px;
+  height: 14px;
 }
 #overview-summary .kpis.hg-draft-kpis .kpi-label {
   font: 600 12.5px/1.2 var(--font-text);
@@ -1230,7 +1141,7 @@ input, select, textarea { accent-color: var(--brand); caret-color: var(--brand);
   color: var(--muted);
 }
 
-/* Tile 4: Squircle App Icons + 3D Keycaps (.hg-quick-dock, grid.css lines 300-312) */
+/* Quick actions */
 #overview-summary .quick-row.hg-quick-dock {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1251,41 +1162,14 @@ input, select, textarea { accent-color: var(--brand); caret-color: var(--brand);
   color: var(--ink);
   transition: transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
 }
-#overview-summary .hg-quick-dock .quick .hg-app-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 24%;
-  padding: 0;
-  border: 0;
-}
-#overview-summary .hg-quick-dock .quick .hg-app-icon .icon {
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #ffffff;
-  box-shadow: none;
-  stroke-width: 2.3;
-}
-/* iOS Calendar Squircle Icon from hero-grid/index.tsx line 158 */
-#overview-summary .hg-quick-dock .quick .hg-app-calendar {
-  background: #ffffff !important;
-  box-shadow:
-    inset 0 0 0 0.5px rgba(0, 0, 0, 0.12),
-    0 6px 14px -8px rgba(0, 0, 0, 0.45) !important;
-}
-.hg-calendar {
-  display: grid;
-  justify-items: center;
-  gap: 0;
-  font: 300 20px/20px var(--font-display);
-  color: #1c1c1e;
-}
-.hg-calendar small {
-  font: 700 8.5px/10px var(--font-text);
-  letter-spacing: 0.04em;
-  color: #e44242;
+#overview-summary .hg-quick-dock .quick > .icon {
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--brand-tint);
+  color: var(--brand);
 }
 .quick-copy {
   display: inline-flex;
@@ -1293,31 +1177,18 @@ input, select, textarea { accent-color: var(--brand); caret-color: var(--brand);
   gap: 6px;
   font: 600 12px/1.2 var(--font-text);
 }
-/* Physical 3D Keycap from stageshow/examples/hero-grid/grid.css line 303 */
-.hg-keycap {
-  display: none;
-  place-items: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  border-radius: 5px;
-  background: linear-gradient(180deg, #ffffff, #f2f1ef);
-  color: #2a2826;
-  font: 700 10.5px/1 var(--font-text);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 1px rgba(0, 0, 0, 0.08),
-    0 2px 0 rgba(0, 0, 0, 0.18),
-    0 4px 6px -1px rgba(0, 0, 0, 0.22);
-}
-:root[data-theme=dark] .hg-keycap {
-  background: linear-gradient(180deg, #2c2d35, #212229);
-  color: #e4e4e7;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 0 0 1px rgba(0, 0, 0, 0.5),
-    0 2px 0 #09090b,
-    0 4px 6px -1px rgba(0, 0, 0, 0.6);
+@media (max-width: 359px) {
+  #overview-summary .quick-row.hg-quick-dock {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  #overview-summary .hg-quick-dock .quick {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+    min-height: 56px;
+    padding: 8px;
+  }
 }
 @media (hover: hover) and (pointer: fine) {
   #overview-summary .hg-quick-dock .quick:hover {
@@ -1334,11 +1205,8 @@ input, select, textarea { accent-color: var(--brand); caret-color: var(--brand);
     padding: 10px 14px 10px 12px;
   }
   .quick-copy {
-    flex: 1;
-    justify-content: space-between;
     font-size: 13.5px;
   }
-  .hg-keycap { display: inline-grid; }
 }
 
 /* ── 9. Wallet Deck & Account Cards with Brand Squircles ─────────────────── */

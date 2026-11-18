@@ -215,6 +215,34 @@ export function balanceSeries(state, month, range='month', asOf=today()) {
   return dates.map(date=>({date,value:available(state,date)}));
 }
 
+// Fluxo pendente por vencimento, a partir do último saldo realizado.
+export function balanceProjection(state, month, asOf=today()) {
+  if(month<asOf.slice(0,7)) return [];
+  const dayCount=daysIn(month);
+  const dayDate=day=>`${month}-${String(day).padStart(2,'0')}`;
+  const opening=isoDate(new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-1,0));
+  const end=dayDate(dayCount);
+  const changes=new Map();
+  for(const item of agendaItems(state,month,end)) {
+    if(item.status==='legacy'||item.type==='transfer') continue;
+    const date=item.date<asOf?asOf:item.date;
+    const effect=item.type==='income'?item.cents:-item.cents;
+    changes.set(date,(changes.get(date)||0)+effect);
+  }
+  if(!changes.size && month===asOf.slice(0,7)) return [];
+
+  const first=opening>asOf?opening:asOf;
+  const dates=[opening,...Array.from({length:dayCount},(_,i)=>dayDate(i+1))];
+  let value=available(state,asOf);
+  for(const [date,effect] of changes) {
+    if(date<first) value+=effect;
+  }
+  return dates.filter(date=>date>=first&&(date!==asOf||opening>=asOf||changes.has(date))).map(date=>{
+    value+=changes.get(date)||0;
+    return {date,value,projected:true};
+  });
+}
+
 // Fluxo do mês pela data de referência: receitas por categoria → despesas por categoria (+ sobra ou falta).
 export function moneyFlow(state, month, limit=5) {
   const group=type=>{const map=new Map();for(const e of state.entries){if(e.type!==type||!inMonth(e.date,month))continue;const k=normalized(e.category),v=map.get(k)||{name:e.category,total:0};v.total+=e.cents;map.set(k,v);}return [...map.values()].sort((a,b)=>b.total-a.total);};

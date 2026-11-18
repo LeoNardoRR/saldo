@@ -84,7 +84,7 @@ test('Backup aceita objetivo sem prazo e rejeita prazo impossível',()=>{
 });
 
 // ---- Visão geral 5.1 ----
-import {spendingPace,cashSeries,safeToSpend,monthForecast,balanceSeries,moneyFlow} from './product.js';
+import {spendingPace,cashSeries,safeToSpend,monthForecast,balanceSeries,balanceProjection,moneyFlow} from './product.js';
 test('Previsão soma salário pendente ao saldo e desconta compromissos e atrasos, sem legado ou meses futuros',()=>{
   const planned={status:'planned',settledDate:''};
   const s=state([
@@ -150,6 +150,29 @@ test('Série do saldo: dia a dia no mês e semanal em 6 meses, terminando no cor
   const w=balanceSeries(s,'2025-05','6m','2025-05-04');
   assert.equal(w[0].date,'2024-11-04');assert.equal(w.at(-1).date,'2025-05-04');assert.ok(w.length>=26&&w.length<=28);
   assert.deepEqual(balanceSeries(s,'2025-07','month','2025-05-04'),[]);
+});
+test('Projeção aplica receita no vencimento e remove previsão após confirmar o recebimento',()=>{
+  const receipt=entry('salário','income',30000,{status:'planned',settledDate:'',dueDate:'2025-05-30'});
+  const s=state([
+    receipt,
+    entry('atraso','expense',5000,{status:'planned',settledDate:'',dueDate:'2025-04-28'}),
+    entry('pendência','income',9000,{status:'legacy',settledDate:''}),
+    entry('despesa futura','expense',4000,{status:'planned',settledDate:'',dueDate:'2025-06-05'}),
+  ]);
+  const asOf='2025-05-18';
+  const projection=balanceProjection(s,'2025-05',asOf);
+  assert.deepEqual(projection[0],{date:asOf,value:95000,projected:true});
+  assert.equal(projection.find(p=>p.date==='2025-05-29').value,95000);
+  assert.equal(projection.find(p=>p.date==='2025-05-30').value,125000);
+  assert.equal(projection.at(-1).value,monthForecast(s,'2025-05',asOf).projected);
+  assert.equal(available(s,asOf),100000);
+  const future=balanceProjection(s,'2025-06',asOf);
+  assert.equal(future[0].value,125000);
+  assert.equal(future.find(p=>p.date==='2025-06-05').value,121000);
+  assert.deepEqual(balanceProjection(s,'2025-04',asOf),[]);
+  receipt.status='settled';
+  receipt.settledDate='2025-05-30';
+  assert.equal(balanceProjection(s,'2025-05','2025-05-30').at(-1).value,125000);
 });
 test('Fluxo do mês agrupa categorias, junta excedentes em Outras e mostra a sobra',()=>{
   const cats=['A','B','C','D','E','F','G'];
