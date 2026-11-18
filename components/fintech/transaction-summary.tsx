@@ -20,9 +20,12 @@ export function TransactionSummary({ctx}:{ctx:FintechContext}){
   {label:'Registros',value:String(rows.length),icon:Hash,color:'text-muted-foreground',bg:'bg-muted'},
  ];
  return <dl className="fintech-tiles grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Resumo do recorte atual">
-  {cards.map(c=><div key={c.label} className="flex items-center gap-3 rounded-2xl bg-card p-3">
-   <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-full',c.bg)} aria-hidden="true"><c.icon className={cn('size-4',c.color)}/></span>
-   <div className="min-w-0"><dt className="text-xs text-muted-foreground">{c.label}</dt><dd className="truncate text-base font-semibold tabular-nums tracking-tight text-foreground">{c.value}</dd></div>
+  {cards.map(c=><div key={c.label} className="fintech-tile flex flex-col justify-between gap-2 rounded-2xl bg-card p-3.5">
+   <div className="flex items-center justify-between gap-2">
+    <dt className="text-xs font-medium text-muted-foreground">{c.label}</dt>
+    <span className={cn('flex size-7 shrink-0 items-center justify-center rounded-lg',c.bg)} aria-hidden="true"><c.icon className={cn('size-3.5',c.color)}/></span>
+   </div>
+   <dd className="text-[17px] font-semibold tabular-nums tracking-tight text-foreground">{c.value}</dd>
   </div>)}
  </dl>;
 }

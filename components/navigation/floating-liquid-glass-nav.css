@@ -4,28 +4,28 @@
  */
 :root {
   --mobile-nav-height:64px;
-  --mobile-nav-bottom:env(safe-area-inset-bottom,0px);
-  --mobile-nav-clearance:calc(var(--mobile-nav-height) + var(--mobile-nav-bottom) + 16px);
-  --nav-glass-tint:rgb(250 249 255 / 8%);
-  --nav-glass-fallback:#f1eff8;
-  --nav-glass-edge:rgb(255 255 255 / 55%);
-  --nav-glass-sheen:rgb(255 255 255 / 42%);
-  --nav-glass-rim:rgb(255 255 255 / 85%);
-  --nav-glass-shadow:0 10px 30px -10px rgb(29 20 55 / 28%),0 1px 3px rgb(29 20 55 / 8%);
-  --nav-glass-lens:rgb(255 255 255 / 22%);
-  --nav-glass-lens-edge:rgb(255 255 255 / 65%);
-  --nav-icon-halo:rgb(255 255 255 / 85%);
+  --mobile-nav-bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  --mobile-nav-clearance:calc(var(--mobile-nav-height) + var(--mobile-nav-bottom) + 20px);
+  --nav-glass-tint:rgb(255 255 255 / 72%);
+  --nav-glass-fallback:#f4f3fa;
+  --nav-glass-edge:rgb(255 255 255 / 75%);
+  --nav-glass-sheen:rgb(255 255 255 / 55%);
+  --nav-glass-rim:rgb(255 255 255 / 92%);
+  --nav-glass-shadow:0 16px 38px -12px rgb(24 16 54 / 22%),0 2px 6px rgb(24 16 54 / 8%);
+  --nav-glass-lens:rgb(91 61 245 / 11%);
+  --nav-glass-lens-edge:rgb(91 61 245 / 22%);
+  --nav-icon-halo:rgb(255 255 255 / 60%);
 }
 :root[data-theme=dark] {
-  --nav-glass-tint:rgb(24 22 34 / 14%);
-  --nav-glass-fallback:#24212f;
-  --nav-glass-edge:rgb(255 255 255 / 16%);
-  --nav-glass-sheen:rgb(255 255 255 / 12%);
-  --nav-glass-rim:rgb(255 255 255 / 38%);
-  --nav-glass-shadow:0 10px 30px -10px rgb(0 0 0 / 60%);
-  --nav-glass-lens:rgb(230 220 255 / 10%);
-  --nav-glass-lens-edge:rgb(245 239 255 / 22%);
-  --nav-icon-halo:rgb(0 0 0 / 70%);
+  --nav-glass-tint:rgb(18 18 28 / 74%);
+  --nav-glass-fallback:#161622;
+  --nav-glass-edge:rgb(255 255 255 / 14%);
+  --nav-glass-sheen:rgb(255 255 255 / 9%);
+  --nav-glass-rim:rgb(255 255 255 / 28%);
+  --nav-glass-shadow:0 18px 42px -10px rgb(0 0 0 / 72%),0 0 0 1px rgb(255 255 255 / 6%);
+  --nav-glass-lens:rgb(155 130 255 / 16%);
+  --nav-glass-lens-edge:rgb(155 130 255 / 32%);
+  --nav-icon-halo:rgb(0 0 0 / 55%);
 }
 
 /* Specific namespace retires legacy dock/FAB styles without changing desktop. */
@@ -61,8 +61,8 @@
 @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
   .liquid-nav__effect {
     background:transparent;
-    -webkit-backdrop-filter:blur(4px) saturate(210%) brightness(1.06);
-    backdrop-filter:blur(4px) saturate(210%) brightness(1.06);
+    -webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.04);
+    backdrop-filter:blur(16px) saturate(190%) brightness(1.04);
   }
   .liquid-nav__tint {background-color:var(--nav-glass-tint)}
 }
@@ -113,13 +113,15 @@
   transition:color 160ms ease-out;
 }
 /* Clear glass shows busy content; a soft halo keeps icons legible on any backdrop. */
-.liquid-nav__item svg {flex:none;transition:transform 200ms ease-out;filter:drop-shadow(0 0 3px var(--nav-icon-halo))}
-/* Icon-only bar: labels stay in the DOM as accessible names but are visually hidden. */
-.liquid-nav__label {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-:root .mobile-nav.liquid-nav [aria-current=page] {color:var(--brand);font-weight:750;background:transparent}
+.liquid-nav__item svg {width:20px;height:20px;flex:none;transition:transform 200ms ease-out;filter:drop-shadow(0 1px 2px var(--nav-icon-halo))}
+.liquid-nav__label {display:block;font-size:10.5px;font-weight:600;letter-spacing:-.01em;line-height:1.1;white-space:nowrap;opacity:.88}
+:root .mobile-nav.liquid-nav [aria-current=page] {color:var(--brand);font-weight:700;background:transparent}
+:root .mobile-nav.liquid-nav [aria-current=page] .liquid-nav__label {opacity:1}
 :root .mobile-nav.liquid-nav [aria-current=page]::before {content:none}
 :root .mobile-nav.liquid-nav .liquid-nav__create {color:var(--brand)}
-.liquid-nav__create svg {width:36px;height:36px;padding:6px;border-radius:50%;background:var(--brand);color:var(--brand-on)}
+.liquid-nav__create .liquid-nav__label {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.liquid-nav__create svg {width:40px;height:40px;padding:9px;border-radius:50%;background:linear-gradient(145deg,#7c5ff4,#5b3df5);color:#fff;box-shadow:0 6px 18px -4px rgb(91 61 245 / 55%),inset 0 1px 0 rgb(255 255 255 / 35%);filter:none}
+:root[data-theme=dark] .liquid-nav__create svg {background:linear-gradient(145deg,#a78bfa,#7c5ff4);color:#fff;box-shadow:0 6px 20px -4px rgb(139 92 246 / 60%),inset 0 1px 0 rgb(255 255 255 / 40%)}
 :root .mobile-nav.liquid-nav .liquid-nav__item:focus-visible {outline:2px solid var(--brand);outline-offset:-3px}
 .liquid-nav__item[data-pressed=true] svg {transform:scale(.9)}
 @media (hover:hover) {:root .mobile-nav.liquid-nav .liquid-nav__item:hover {background:var(--brand-tint)}}

@@ -5,7 +5,7 @@ const main=document.getElementById('main-content');
 
 /* ---- tema claro/escuro ---- */
 const THEME_KEY='saldo.theme.v1';
-const themeColors={dark:'#101013',light:'#f2f2f7'};
+const themeColors={dark:'#09090e',light:'#f4f4f8'};
 function applyTheme(theme){
   root.dataset.theme=theme;
   document.querySelector('meta[name=theme-color]')?.setAttribute('content',themeColors[theme]);

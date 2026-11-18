@@ -41,11 +41,30 @@ const paths={
   camera:'<path d="M8 5 6 8H3v13h18V8h-3l-2-3Z"/><circle cx="12" cy="14" r="4"/>',transfer:'<path d="M3 7h18m-4-4 4 4-4 4M21 17H3m4-4-4 4 4 4"/>',
 };
 export const icon = (name,cls='') => `<svg class="icon ${esc(cls)}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.grid}</svg>`;
+
+// Solid filled glyphs & vibrant squircle palette adapted from Benji Taylor's Stageshow (hero-grid/index.tsx & Icon.tsx)
+const SQUIRCLE_MARKS={
+  food:['#ff9500','<path fill="currentColor" fill-rule="evenodd" d="M13.2 2.8 5.6 13.1a.8.8 0 0 0 .64 1.27H11l-1.2 6.8 7.6-10.3a.8.8 0 0 0-.64-1.27H12l1.2-6.8Z"/>'],
+  home:['#7a5cff','<path fill="currentColor" fill-rule="evenodd" d="M11.3 2.5a1.1 1.1 0 0 1 1.4 0l8 6.5a1.1 1.1 0 0 1 .4.85v9.4a1.5 1.5 0 0 1-1.5 1.5h-4.8v-6h-5.6v6H4.4a1.5 1.5 0 0 1-1.5-1.5v-9.4c0-.33.15-.64.4-.85l8-6.5Z"/>'],
+  car:['#0a7cff','<path fill="currentColor" fill-rule="evenodd" d="M12 2.8a7 7 0 0 1 7 7c0 5-7 11.6-7 11.6S5 14.8 5 9.8a7 7 0 0 1 7-7Zm0 4.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z"/>'],
+  heart:['#ff3b45','<path fill="currentColor" fill-rule="evenodd" d="M12 20s-7.5-4.6-7.5-10.1A4.4 4.4 0 0 1 12 7.1a4.4 4.4 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20Z"/>'],
+  book:['#5b5bf6','<path fill="currentColor" fill-rule="evenodd" d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 17.5Zm3.5 2.3v1.6h7V8.8Zm0 3.6v1.6h7v-1.6Zm0 3.6v1.6h4.4V16Z"/>'],
+  bag:['#ff6a3d','<path fill="currentColor" fill-rule="evenodd" d="M7 4h10a1 1 0 0 1 1 1v15.2l-6-3.6-6 3.6V5a1 1 0 0 1 1-1Z"/>'],
+  repeat:['#1c1c1e','<path fill="currentColor" fill-rule="evenodd" d="M7.4 5.2v12.8a.9.9 0 0 0 1.37.77l10.2-6.4a.9.9 0 0 0 0-1.54L8.77 4.43A.9.9 0 0 0 7.4 5.2Z"/>'],
+  bank:['#1fb38a','<path fill="currentColor" fill-rule="evenodd" d="M5 11.2 10 16l9-9.2-1.7-1.6L10 12.7 6.7 9.5Z"/>'],
+  receipt:['#1c1c1e','<path fill="currentColor" fill-rule="evenodd" d="M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Zm-.9 4v5.2l4.3 2.6.9-1.5-3.4-2V7.5Z"/>'],
+  spark:['#2bb3f0','<path fill="currentColor" fill-rule="evenodd" d="M4 8.2A2.2 2.2 0 0 1 6.2 6h1.6l1.3-1.6h5.8L16.2 6h1.6A2.2 2.2 0 0 1 20 8.2v8.6a2.2 2.2 0 0 1-2.2 2.2H6.2A2.2 2.2 0 0 1 4 16.8Zm8 1.3a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8Z"/>'],
+};
+
 export function categoryIcon(name='') {
   const key=String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-  const symbols=[[/alimenta|mercado|restaurante/,'food'],[/moradia|aluguel|casa/,'home'],[/transporte|combustivel|uber/,'car'],[/saude|academia|farmacia/,'heart'],[/educa|curso|escola/,'book'],[/compra|roupa/,'bag'],[/assinatura|recorrente/,'repeat'],[/salario|renda/,'bank'],[/imposto|conta|luz|agua|internet/,'receipt'],[/lazer|viagem/,'spark']];
-  return icon(symbols.find(([match])=>match.test(key))?.[1]||'receipt');
+  const symbols=[[/alimenta|mercado|restaurante/,'food'],[/moradia|aluguel|casa|condominio/,'home'],[/transporte|combustivel|uber/,'car'],[/saude|academia|farmacia/,'heart'],[/educa|curso|escola/,'book'],[/compra|roupa/,'bag'],[/assinatura|recorrente|spotify|icloud/,'repeat'],[/salario|renda|reembolso|receita/,'bank'],[/imposto|conta|luz|agua|internet|energia|enel|vivo/,'receipt'],[/lazer|viagem/,'spark']];
+  const kind=symbols.find(([match])=>match.test(key))?.[1]||'receipt';
+  const [bg,svgPath]=SQUIRCLE_MARKS[kind]||SQUIRCLE_MARKS.receipt;
+  return `<span class="ss-squircle" style="--sq-bg:${bg}" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">${svgPath}</svg></span>`;
 }
+
+export const ssCheck = (on=true,pending=false) => `<span class="ss-check" ${on?'data-on':''} ${pending?'data-pending':''} aria-hidden="true"><svg viewBox="0 0 16 16" width="18" height="18"><circle class="ss-check__ring" cx="8" cy="8" r="6.5"/><circle class="ss-check__arc" cx="8" cy="8" r="6.5" pathLength="1"/><circle class="ss-check__fill" cx="8" cy="8" r="7.25"/><path class="ss-check__tick" d="M5.2 8.2 7.1 10.1 10.9 5.9" pathLength="1"/></svg></span>`;
 export function hydrateIcons(root=document) {root.querySelectorAll('[data-icon]').forEach(el=>{el.innerHTML=icon(el.dataset.icon);delete el.dataset.icon;});}
 export const action = (name,label,{id='',cls='button secondary',iconName='',extra=''}={}) => `<button type="button" class="${esc(cls)}" data-action="${esc(name)}" ${id?`data-id="${esc(id)}"`:''} ${extra}>${iconName?icon(iconName):''}${esc(label)}</button>`;
 export const badge = (label,kind='neutral') => `<span class="badge ${esc(kind)}">${esc(label)}</span>`;

@@ -1,6 +1,6 @@
-# Saldo 4.0
+# Saldo 5.0
 
-Controle financeiro pessoal em português, com PWA, contas individuais e sincronização. A fonte atual é este diretório `sites/saldo`; os arquivos antigos da raiz do workspace não são a versão atual.
+Controle financeiro pessoal em português, com PWA, contas individuais, sincronização e engenharia de design de alta precisão (inspirada em Apple, Linear, Revolut e nos princípios de Design Engineering de Emil Kowalski, Jakub Krehel e Benji Taylor). A fonte atual é este diretório `sites/saldo`; os arquivos antigos da raiz do workspace não são a versão atual.
 
 ## Execução local
 
@@ -37,7 +37,7 @@ Formulários não aceitam pagamento/recebimento realizado no futuro. Importaçõ
 
 ## Dados e sincronização
 
-O formato permanece **v3**, compatível com backups existentes; 4.0 é a versão de produto/interface. `selectWorkspace` confirma sessão antes de mostrar dados online e separa armazenamento, backups, preferências e contexto por usuário. Offline usa a última identidade confirmada no dispositivo.
+O formato permanece **v3**, compatível com backups existentes; 5.0 é a versão de produto/interface. `selectWorkspace` confirma sessão antes de mostrar dados online e separa armazenamento, backups, preferências e contexto por usuário. Offline usa a última identidade confirmada no dispositivo.
 
 D1 do próprio Site isola documentos pela identidade autenticada do ChatGPT. Cliente mantém cópia local, salva offline e sincroniza ao reconectar, voltar à janela e a cada 15 segundos enquanto aberto. Web Locks/revisões condicionais protegem escritas. Alterações independentes são combinadas; conflito exige escolha e mostra campos diferentes. Troca de conta não envia dados ao novo usuário.
 

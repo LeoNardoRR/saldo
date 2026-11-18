@@ -1,13 +1,12 @@
-# Saldo — interface de operação
+# Saldo 5.0 — Interface e Engenharia de Design
 
-Uso: consulta rápida de finanças no celular, frequentemente com uma mão, e revisão de registros em telas maiores. Clareza dos números e ação explícita precedem decoração.
+Uso: consulta rápida de finanças no celular, frequentemente com uma mão, e revisão analítica em telas maiores. Clareza dos números e ação explícita precedem decoração.
 
-Identidade preservada: S geométrico, violeta, carvão e tipografia Manrope/DM Sans local. Tema claro com fundo neutro e superfícies brancas; escuro com camadas carvão. Tokens autoritativos estão no início de `premium.css`, carregado após os estilos herdados.
+Identidade Saldo 5.0: S geométrico, paleta Cobalt-Indigo (`#4F46E5` claro / `#818CF8` escuro), Mint Emerald (`#0D9488` / `#2DD4BF`), Coral Rose (`#E11D48` / `#FB7185`) e tipografia Manrope/DM Sans local. Tema claro com fundo alabastro neutro (`#F6F6F9`) e superfícies brancas elevadas por `--shadow-border` de 3 camadas; escuro com camadas carbono-grafite (`#0B0C10` / `#13141A`) e anel luminoso `1px oklch(1 0 0 / 0.08)`. Tokens autoritativos estão no início de `premium.css`.
 
-Superfícies: resumo compacto com carteira horizontal; análises separadas; atividade para pendências. Desktop mostra as áreas em grade; celular usa abas. Navegação inferior respeita safe area. Formulários mantêm labels, ajuda e botões fixos de ação no modal.
-
-Padrões: escala de espaços 4/8/12/16/20/24/32; raios 8 nos controles e 14 nas superfícies; áreas de toque 44px; valores tabulares e sem quebra. Bordas simples, sem vidro decorativo. Violeta para seleção, verde para entrada/sucesso, coral para saída/aviso conforme contexto. Cor acompanha texto, nunca é o único sinal.
-
-Movimento: indicador de seleção nas abas com Motion Primitives; respeitar movimento reduzido. Dinheiro não conta a partir de zero. Gráficos não animam valores. Nenhuma animação bloqueia operações.
-
-Referências e licenças: `docs/UI_MODERNIZATION.md`. Componentes financeiros React em `components/finance`; backend, armazenamento e regras financeiras permanecem separados.
+Princípios de Design Engineering aplicados:
+- **Raios concêntricos (`outerRadius = innerRadius + padding`)**: controles segmentados (`14px` externo = `10px` interno + `4px` padding; `12px` = `9px` + `3px`), atalhos (`18px` = `10px` + `8px`) e cartões aninhados.
+- **Sombras como borda (`--shadow-border`)**: superfícies e cartões usam sombras transparentes em camadas em vez de bordas pesadas; bordas sólidas ficam restritas a divisores estruturais (`border-top`/`border-bottom`).
+- **Alinhamento óptico**: botões com texto e ícone compensam `-2px` de padding no lado do ícone.
+- **Tipografia e números**: `text-wrap: balance` em títulos, `text-wrap: pretty` em descrições/notas, `-webkit-font-smoothing: antialiased` na raiz e `font-variant-numeric: tabular-nums` sem truncamento (`...`) em todos os montantes.
+- **Microinterações e Mobile Native**: resposta imediata no clique (`:active` com `transform: scale(0.97)` em `100ms ease-out`), estados `:hover` isolados em `@media (hover: hover) and (pointer: fine)`, cross-fade contextual no botão de tema (`scale(0.25 -> 1)` + `blur(4px -> 0)`), popovers com `transform-origin` ancorado ao gatilho e `font-size: 16px` nos campos para evitar auto-zoom no iOS.
