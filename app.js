@@ -18,7 +18,7 @@ if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(initialMonth))initialMonth=today().slice(0,7)
 let preferences={};
 try{preferences=JSON.parse(workspace.storage.getItem('saldo.preferences.v4')||'{}');}catch{}
 const filterDefaults=()=>({query:'',type:'',account:'',category:'',status:'',allPeriods:false,basis:'reference',sort:'date',direction:-1,page:1,size:25});
-const ctx={workspace,state:null,month:initialMonth,page:resolveNavigationPage(location.hash),preferences,filter:filterDefaults(),mobileFilters:false,selected:new Set(),categoryMode:'all',storageError:false,syncStatus:{kind:'busy',message:'Abrindo seu espaço…'}};
+const ctx={workspace,state:null,month:initialMonth,page:resolveNavigationPage(location.hash),preferences,filter:filterDefaults(),mobileFilters:true,selected:new Set(),categoryMode:'all',storageError:false,syncStatus:{kind:'busy',message:'Abrindo seu espaço…'}};
 ctx.cash=c=>ctx.preferences.hidden?'<span class="financial-value" aria-label="Valor oculto">••••</span>':`<span class="financial-value">${esc(money(c))}</span>`;
 ctx.setPreference=(key,value)=>{ctx.preferences[key]=value;try{workspace.storage.setItem('saldo.preferences.v4',JSON.stringify(ctx.preferences));}catch{};};
 const main=$('#main-content');
@@ -28,7 +28,7 @@ let lastData='',firstCloud=true;
 function saveContext(){try{sessionStorage.setItem(workspace.monthKey,ctx.month);}catch{}}
 function updateHeader(){
   const [title,subtitle]=pageMeta[ctx.page];$('#page-title').textContent=title;$('#page-subtitle').textContent=subtitle;document.title=`${title} · Saldo`;
-  monthNavigation.render();$('#period-control').hidden=ctx.page==='settings'||ctx.page==='recurring';
+  monthNavigation.render();const pc=$('#period-control');pc.hidden=ctx.page==='settings'||ctx.page==='recurring';pc.toggleAttribute('data-all-periods',ctx.page==='transactions'&&Boolean(ctx.filter.allPeriods));
   document.querySelectorAll('[data-page]').forEach(a=>{if(a.closest('.liquid-nav'))return;if(a.dataset.page===ctx.page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   mobileNavigation.render(ctx.page);
   document.body.classList.toggle('values-hidden',Boolean(ctx.preferences.hidden));
@@ -104,6 +104,7 @@ function invoke(name,button){
     case 'filter-toggle':ctx.mobileFilters=!ctx.mobileFilters;return ctx.render();
     case 'sort-direction':ctx.filter.direction=-ctx.filter.direction;return ctx.render();
     case 'clear-filters':ctx.filter=filterDefaults();return refreshFilters();
+    case 'clear-filter-field':if(id==='allPeriods')ctx.filter.allPeriods=false;else if(id==='basis')ctx.filter.basis='reference';else if(id&&id in ctx.filter)ctx.filter[id]='';return refreshFilters();
     case 'sort':ctx.filter.direction=ctx.filter.sort===id?-ctx.filter.direction:id==='description'?1:-1;ctx.filter.sort=id;return ctx.render();
     case 'previous-page':ctx.filter.page=Math.max(1,ctx.filter.page-1);return ctx.render();
     case 'next-page':ctx.filter.page++;return ctx.render();
